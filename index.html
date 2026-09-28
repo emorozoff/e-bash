@@ -2435,7 +2435,7 @@ function updateCity(dt, t) {
 const MAT = {
   PANEL: 0, PLINTH: 1, SLAB: 2, INNER: 3, BRICK: 4, CONCRETE: 5, WINDOW: 6, BALCONY: 7,
   ROOF: 8, DOOR: 9, METAL: 10, WINDOW_IND: 11, CHIMNEY: 12, FURNITURE: 13,
-  SIGN: 14, SANDWICH: 15, PLASTER: 16, GATE: 17, SHOPWIN: 18, SHELF: 19, BOXES: 20, SIGNWALL: 21, ROOFLT: 22,
+  SIGN: 14, SANDWICH: 15, PLASTER: 16, GATE: 17, SHOPWIN: 18, SHELF: 19, BOXES: 20, SIGNWALL: 21, ROOFLT: 22, RACK: 23,
 };
 const stressUniform = { value: 0 };
 const pieceTimeUniform = { value: 0 };
@@ -2701,7 +2701,7 @@ pieceMaterial.onBeforeCompile = (sh) => {
         } else if (m == 15) {           // сэндвич-панель из профлиста, цвет — по seed
           float ci = floor(seed * 8.0);
           vec3 pc = ci < 0.5 ? vec3(0.9, 0.9, 0.88) : ci < 1.5 ? vec3(0.7, 0.72, 0.74) : ci < 2.5 ? vec3(0.8, 0.14, 0.12)
-                  : ci < 3.5 ? vec3(0.22, 0.6, 0.3) : ci < 4.5 ? vec3(0.14, 0.34, 0.68) : ci < 5.5 ? vec3(0.95, 0.76, 0.18)
+                  : ci < 3.5 ? vec3(0.22, 0.6, 0.3) : ci < 4.5 ? vec3(0.02, 0.36, 1.0) : ci < 5.5 ? vec3(0.95, 0.76, 0.18)
                   : ci < 6.5 ? vec3(0.3, 0.32, 0.35) : vec3(0.88, 0.82, 0.68);
           bool outer = isExt || (ext < 0.5 && !isInt);
           if (outer) {
@@ -2766,6 +2766,23 @@ pieceMaterial.onBeforeCompile = (sh) => {
             col = board ? L(vec3(0.62, 0.64, 0.66)) : isProd ? L(prod) * (0.85 + 0.15 * pn(vec2(hx * 30.0, ly * 8.0))) : L(vec3(0.16, 0.16, 0.17));
             pRough = board ? 0.45 : 0.6; pMetal = board ? 0.5 : 0.0;
           } else col = L(vec3(0.6, 0.62, 0.64));
+        } else if (m == 23) {           // складской стеллаж: синие стойки, оранжевые балки, коробки
+          if (axis != 1.0) {
+            float ly = vUnit.y * vDims.y + vDims.y * 0.5;
+            float hx = (axis == 0.0 ? vUnit.z * vDims.z + vDims.z * 0.5 : vUnit.x * vDims.x + vDims.x * 0.5);
+            float lv = fract(ly / 1.5), bay = fract(hx / 2.25);
+            bool rbeam = lv < 0.07, upr = bay < 0.025 || bay > 0.975;
+            vec2 cell = vec2(floor(hx / 0.75), floor(ly / 1.5));
+            float full = step(0.22, ph(cell + seed * 7.0)), bh = 0.55 + 0.35 * ph(cell * 1.7 + 3.0);
+            bool rbox = !rbeam && !upr && full > 0.5 && (lv - 0.07) / 0.93 < bh && fract(hx / 0.75) > 0.06;
+            if (upr) col = L(vec3(0.16, 0.3, 0.62));
+            else if (rbeam) col = L(vec3(0.95, 0.5, 0.1));
+            else if (rbox) {
+              col = L(vec3(0.68, 0.52, 0.34)) * (0.85 + 0.2 * ph(cell));
+              col = mix(col, L(vec3(0.92, 0.92, 0.9)), step(abs(fract(hx / 0.75) - 0.5), 0.1) * step(abs(lv - 0.45), 0.05));
+            } else col = L(vec3(0.08, 0.08, 0.09));
+            pRough = 0.7; pMetal = (upr || rbeam) ? 0.5 : 0.0;
+          } else col = L(vec3(0.95, 0.5, 0.1));
         } else if (m == 20) {           // картонные коробки и посылки: скотч, наклейка
           vec2 blp = axis == 0.0 ? vec2(vUnit.z * vDims.z, vUnit.y * vDims.y) : axis == 1.0 ? vec2(vUnit.x * vDims.x, vUnit.z * vDims.z) : vec2(vUnit.x * vDims.x, vUnit.y * vDims.y);
           col = L(vec3(0.68, 0.52, 0.34)) * (0.9 + 0.12 * pn(uv * 7.0 + seed * 3.0));
@@ -3347,6 +3364,33 @@ defSign('post_box', 0.55, 0.65, 256, 0, (g, w, h) => {
   g.beginPath(); g.moveTo(w * 0.3, h * 0.62); g.lineTo(w * 0.5, h * 0.74); g.lineTo(w * 0.7, h * 0.62); g.stroke();
 });
 
+// ---------- склад OZON ----------
+defSign('ozon_band', 32, 2.8, 2048, 1, (g, w, h) => {
+  g.fillStyle = '#005bff'; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(0,0,0,.12)'; for (let i = 1; i < 8; i++) g.fillRect(i * w / 8, 0, 2, h);
+  sText(g, 'OZON', w / 2, h * 0.53, { s: h * 0.78, c: '#fff', max: w * 0.4 });
+  sText(g, 'ФУЛФИЛМЕНТ', w * 0.86, h * 0.5, { f: F_OSW, w: 600, s: h * 0.2, c: '#cfe0ff', max: w * 0.2 });
+  sText(g, 'ВОРОТА 1–3', w * 0.14, h * 0.5, { f: F_OSW, w: 600, s: h * 0.2, c: '#cfe0ff', max: w * 0.2 });
+});
+defSign('ozon_truck', 12, 2.6, 1536, 0, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#005bff'); gr.addColorStop(1, '#0046c8');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(0,0,0,.08)'; for (let i = 1; i < 14; i++) g.fillRect(i * w / 14, 0, 3, h);
+  g.fillStyle = '#f91155'; g.fillRect(0, h * 0.86, w, h * 0.05);
+  sText(g, 'OZON', w * 0.3, h * 0.46, { s: h * 0.62, c: '#fff', max: w * 0.45 });
+  sText(g, 'доставим завтра*', w * 0.73, h * 0.4, { s: h * 0.16, c: '#fff', max: w * 0.42 });
+  sText(g, '*завтра — понятие растяжимое', w * 0.73, h * 0.62, { w: 500, s: h * 0.085, c: '#cfe0ff', max: w * 0.42 });
+});
+defSign('ozon_hire', 8, 3, 1024, 0, (g, w, h, R) => {
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#005bff'; g.fillRect(0, 0, w, h * 0.3);
+  sText(g, 'ТРЕБУЮТСЯ', w / 2, h * 0.16, { f: F_RUSSO, w: 400, s: h * 0.2, c: '#fff', max: w * 0.9 });
+  sText(g, 'кладовщики · сборщики · водители', w / 2, h * 0.43, { w: 600, s: h * 0.09, c: '#1a1a1a', max: w * 0.9 });
+  sText(g, 'от 90 000 ₽*', w / 2, h * 0.63, { f: F_RUSSO, w: 400, s: h * 0.17, c: '#f91155', max: w * 0.8 });
+  sText(g, '*если склад ещё будет стоять', w / 2, h * 0.84, { w: 500, s: h * 0.07, c: '#6b7888', max: w * 0.9 });
+  sGrime(g, w, h, R, 0.12);
+});
+
 // ---------- раскладка атласа (полки по высоте) ----------
 function packSigns() {
   let k = 1;
@@ -3424,15 +3468,17 @@ MP[MAT.ROOF]     = MP[MAT.SLAB];
 MP[MAT.METAL]    = { density: 2600, tough: 140e3, sigC: 1.2e6, sigT: 0.6e6, tau: 0.4e6, sf: 2.5, bondE: 120e3, margin: 0.6, snd: 2, debris: 0x5a5550 };
 MP[MAT.FURNITURE] = { density: 380, tough: 9e3, sigC: 0.2e6, sigT: 0.05e6, tau: 0.05e6, sf: 2.0, bondE: 6e3, margin: 0.2, snd: 0, debris: 0x7a5a3a };
 MP[MAT.CHIMNEY]  = { density: 1800, tough: 26e3, sigC: 0.40e6, sigT: 0.025e6, tau: 0.07e6, sf: 2.0, bondE: 18e3, margin: 0.08, snd: 1, debris: 0x8e4632 };
-// лёгкие постройки: вывески, профлист, штукатурка, ворота, стеллажи, коробки
-MP[MAT.SIGN]     = { density: 320, tough: 7e3, sigC: 0.3e6, sigT: 0.12e6, tau: 0.08e6, sf: 2.0, bondE: 6e3, margin: 0.3, snd: 2, debris: 0xd9d9d6 };
-MP[MAT.SANDWICH] = { density: 170, tough: 7e3, sigC: 0.25e6, sigT: 0.07e6, tau: 0.06e6, sf: 2.0, bondE: 7e3, margin: 0.3, snd: 2, debris: 0xd3d6d8 };
+// лёгкие постройки: вывески, профлист, штукатурка, ворота, стеллажи, коробки.
+// Профлист и вывески держатся на каркасе, а друг за друга — слабо: без опоры отваливаются
+MP[MAT.SIGN]     = { density: 320, tough: 7e3, sigC: 0.08e6, sigT: 0.03e6, tau: 0.02e6, sf: 1.5, bondE: 6e3, margin: 0.3, snd: 2, debris: 0xd9d9d6 };
+MP[MAT.SANDWICH] = { density: 170, tough: 7e3, sigC: 0.015e6, sigT: 0.02e6, tau: 0.015e6, sf: 1.5, bondE: 7e3, margin: 0.3, snd: 2, debris: 0xd3d6d8 };
 MP[MAT.PLASTER]  = { density: 1800, tough: 30e3, sigC: 0.45e6, sigT: 0.035e6, tau: 0.08e6, sf: 2.0, bondE: 22e3, margin: 0.14, snd: 1, debris: 0xcfc8b8 };
 MP[MAT.GATE]     = { density: 420, tough: 22e3, sigC: 0.5e6, sigT: 0.3e6, tau: 0.15e6, sf: 2.0, bondE: 16e3, margin: 0.4, snd: 2, debris: 0x55624f };
 MP[MAT.SHELF]    = { density: 180, tough: 4e3, sigC: 0.15e6, sigT: 0.05e6, tau: 0.04e6, sf: 2.0, bondE: 3e3, margin: 0.2, snd: 2, debris: 0xc9a64a };
 MP[MAT.BOXES]    = { density: 110, tough: 2e3, sigC: 0.1e6, sigT: 0.03e6, tau: 0.03e6, sf: 2.0, bondE: 2e3, margin: 0.2, snd: 0, debris: 0xa27a4c };
 MP[MAT.SIGNWALL] = Object.assign({}, MP[MAT.BRICK]);
 // сборная кровля по балкам: стыки слабые — без опоры панель проваливается
+MP[MAT.RACK]     = { density: 100, tough: 1.5e3, sigC: 0.2e6, sigT: 0.05e6, tau: 0.04e6, sf: 2.0, bondE: 3e3, margin: 0.2, snd: 2, debris: 0xb08850 };
 MP[MAT.ROOFLT]   = { density: 1450, tough: 30e3, sigC: 0.4e6, sigT: 0.01e6, tau: 0.006e6, sf: 1.5, bondE: 20e3, margin: 0.3, snd: 0, debris: 0x8f8f8c };
 const SHATTER_K = 1.7;       // во сколько раз превысить прочность, чтобы блок раскололся
 let physPressure = 0;        // 0..1 — насколько физика не успевает (тогда меньше осколков)
@@ -3517,7 +3563,7 @@ function makePiece(o) {
     kind: 'piece', id: pieces.length, mat: o.mat, mp,
     pos: o.pos.clone(), quat: o.quat ? o.quat.clone() : new Q4(), half: o.half.clone(), dims: o.half.clone().multiplyScalar(2),
     ext: o.ext || 0, seed: o.seed != null ? o.seed : Math.random(), tex: o.tex ? o.tex.clone() : o.pos.clone(),
-    anchored: !!o.anchored, noAuto: !!o.noAuto,
+    anchored: !!o.anchored, noAuto: !!o.noAuto, simple: !!o.simple,
     state: PS.ATTACHED, body: null, collider: null, lp: new V3(), lq: new Q4(), L: new M4(),
     bonds: [], windows: [], damage: 0, stress: 0, u: 0, ni: -1, _v: 0, _w: 0, _d: 0,
     inst: -1, pool: null, vol: 0, mass: 0, tough: 0,
@@ -4186,8 +4232,27 @@ function distOutsideHull(pts, x, z) {
   for (let i = 0; i < h.length; i++) d = Math.min(d, distSeg(x, z, h[i], h[(i + 1) % h.length]));
   return d;
 }
+// Балки и кровельные панели лежат пролётом: если опора осталась только с одной стороны
+// (или её нет вовсе), элемент срывается — модель нагрузок без изгиба сама этого не видит
+function simpleSpanCheck() {
+  let any = false;
+  for (const p of pieces) {
+    if (!p.simple || p.state !== PS.ATTACHED) continue;
+    const pts = [];
+    for (const b of p.bonds) {
+      if (b.broken || !b.vertical) continue;
+      const o = otherEnd(b, p);
+      if (o.state !== PS.ATTACHED || o.pos.y >= p.pos.y) continue;
+      for (let i = 0; i < b.pts.length; i += 2) pts.push([b.pts[i], b.pts[i + 1]]);
+    }
+    const d = pts.length ? distOutsideHull(pts, p.pos.x, p.pos.z) : 1e9;
+    if (d > Math.max(0.3, p.mp.margin)) { for (const b of p.bonds) if (!b.broken) breakBond(b); any = true; }
+  }
+  return any;
+}
 function tippingCheck() {
   tipDirty = false; lastTipCheck = simTime;
+  if (simpleSpanCheck()) { structDirty = true; tipDirty = true; return true; }
   for (const h of cutHeights) {
     const stamp = ++visitStamp;
     for (const p0 of pieces) {
@@ -4438,7 +4503,7 @@ function bx(x0, x1, y0, y1, z0, z1, mat, o = {}) {
     pos: new V3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2),
     half: new V3((x1 - x0) / 2, (y1 - y0) / 2, (z1 - z0) / 2),
     mat, ext: o.ext || 0, anchored: o.anchored != null ? o.anchored : y0 < 0.01,
-    seed: o.seed != null ? o.seed : LR(), densityScale: o.ds, toughScale: o.ts, noAuto: o.noAuto,
+    seed: o.seed != null ? o.seed : LR(), densityScale: o.ds, toughScale: o.ts, noAuto: o.noAuto, simple: o.simple,
   });
 }
 function win(x0, x1, y0, y1, z0, z1, mat, seed) { return makeWindow(x0, x1, y0, y1, z0, z1, mat, seed != null ? seed : LR()); }
@@ -4935,21 +5000,21 @@ function signBox(id, face, x0, x1, y0, y1, z0, z1, nu = 1, nv = 1, mat = MAT.SIG
 function buildPyaterochka() {
   LR = mulberry32(5005);
   const X0 = -15, X1 = 15, Z0 = -9, Z1 = 9, T = 0.2, HC = 5.2, HW = 5.65, RT = 0.25;
+  const WTOP = 6.7, FTOP = 7.2;   // стены выше кровли (парапет); кровля лежит внутри них, только на каркасе
   const WHITE = pal8(0, true), GREY = pal8(6, false), RED = pal8(2, false), GREEN = pal8(3, false);
-  const colX = [X0 + T + 0.15, -9, -3, 3, 9, X1 - T - 0.15], colZ = [Z0 + T + 0.15, -3, 3, Z1 - T - 0.15];
+  const colX = [X0 + T + 0.15, -9, -3, 3, 9, X1 - T - 0.15], colZ = [Z0 + T + 0.2, -3, 3, Z1 - T - 0.2];
   // пол торгового зала
   const fw = (X1 - X0 - 2 * T) / 5, fd = (Z1 - Z0 - 2 * T) / 3;
   for (let i = 0; i < 5; i++) for (let k = 0; k < 3; k++) bx(X0 + T + i * fw, X0 + T + (i + 1) * fw, 0, 0.25, Z0 + T + k * fd, Z0 + T + (k + 1) * fd, MAT.CONCRETE, { anchored: true });
-  // стальные колонны и балки
+  // стальные колонны; балки пролётами с зазором над колонной — соседние друг друга не держат
   for (const x of colX) for (const z of colZ) {
     bx(x - 0.15, x + 0.15, 0.25, 2.7, z - 0.15, z + 0.15, MAT.METAL, { ds: 0.35 });
     bx(x - 0.15, x + 0.15, 2.7, HC, z - 0.15, z + 0.15, MAT.METAL, { ds: 0.35 });
   }
-  // балки пролётами, с зазором над колонной: соседние балки друг друга не держат
-  for (const z of colZ) for (let i = 0; i < colX.length - 1; i++) bx(colX[i] + 0.03, colX[i + 1] - 0.03, HC, HW, z - 0.15, z + 0.15, MAT.METAL, { ds: 0.3 });
-  // кровля по балкам
-  const zs = [Z0, -3, 3, Z1];
-  for (let i = 0; i < 10; i++) for (let k = 0; k < 3; k++) bx(X0 + i * 3, X0 + (i + 1) * 3, HW, HW + RT, zs[k], zs[k + 1], MAT.ROOFLT, { ds: 0.45 });
+  for (const z of colZ) for (let i = 0; i < colX.length - 1; i++) bx(colX[i] + 0.03, colX[i + 1] - 0.03, HC, HW, z - 0.15, z + 0.15, MAT.METAL, { ds: 0.3, simple: true });
+  // кровля — внутри стен, на балках
+  const rx0 = X0 + T + 0.04, rx1 = X1 - T - 0.04, rz = [Z0 + T + 0.04, -3, 3, Z1 - T - 0.04], rw = (rx1 - rx0) / 10;
+  for (let i = 0; i < 10; i++) for (let k = 0; k < 3; k++) bx(rx0 + i * rw, rx0 + (i + 1) * rw, HW, HW + RT, rz[k], rz[k + 1], MAT.ROOFLT, { ds: 0.45, simple: true });
   // фасад: витрины, вход, глухой участок с акцией
   const zf0 = Z1 - T, zf1 = Z1, zW = [Z1 - 0.13, Z1 - 0.07];
   for (const [a, b] of [[X0, X0 + 0.5], [-9.15, -8.85], [-3.15, -2.85], [2.85, 3.15], [8.85, 9.15]]) bx(a, b, 0.6, 3.6, zf0, zf1, MAT.SANDWICH, { ext: 5, seed: GREY });
@@ -4960,14 +5025,11 @@ function buildPyaterochka() {
   win(3.15, 8.85, 0.05, 3.6, zW[0], zW[1], MAT.SHOPWIN, 0.37);
   rowX(9.15, X1, 0.6, 3.0, zf0, zf1, MAT.SANDWICH, 2, { ext: 5, seed: WHITE });
   rowX(9.15, X1, 3.0, 3.6, zf0, zf1, MAT.SANDWICH, 2, { ext: 5, seed: WHITE });
-  rowX(X0, X1, 3.6, 4.2, zf0, zf1, MAT.SANDWICH, 10, { ext: 5, seed: WHITE });
-  rowX(X0, X1, 4.2, 4.45, zf0, zf1, MAT.SANDWICH, 10, { ext: 5, seed: GREEN });
-  rowX(X0, X1, 4.45, HW, zf0, zf1, MAT.SANDWICH, 10, { ext: 5, seed: RED });
+  for (const [ya, yb, sd] of [[3.6, 4.2, WHITE], [4.2, 4.45, GREEN], [4.45, 5.8, RED], [5.8, FTOP, RED]]) rowX(X0, X1, ya, yb, zf0, zf1, MAT.SANDWICH, 10, { ext: 5, seed: sd });
   // боковые стены
-  for (const [xa, xb, e] of [[X0, X0 + T, 2], [X1 - T, X1, 1]]) {
-    for (const [ya, yb, sd] of [[0, 0.6, GREY], [0.6, 3.0, WHITE], [3.0, 4.2, WHITE], [4.2, 4.45, GREEN], [4.45, HW, RED]])
+  for (const [xa, xb, e] of [[X0, X0 + T, 2], [X1 - T, X1, 1]])
+    for (const [ya, yb, sd] of [[0, 0.6, GREY], [0.6, 3.0, WHITE], [3.0, 4.2, WHITE], [4.2, 4.45, GREEN], [4.45, 5.6, RED], [5.6, WTOP, RED]])
       rowZ(xa, xb, ya, yb, Z0 + T, Z1 - T, MAT.SANDWICH, 6, { ext: e, seed: sd });
-  }
   // задняя стена с воротами приёмки товара
   const zb0 = Z0, zb1 = Z0 + T;
   for (const [a, b, n] of [[X0, 6, 7], [10, X1, 2]]) {
@@ -4975,14 +5037,7 @@ function buildPyaterochka() {
     rowX(a, b, 0.6, 3.2, zb0, zb1, MAT.SANDWICH, n, { ext: 6, seed: WHITE });
   }
   win(6, 10, 0.05, 3.2, Z0 + 0.07, Z0 + 0.13, MAT.DOOR, 0.62);
-  rowX(X0, X1, 3.2, 4.2, zb0, zb1, MAT.SANDWICH, 10, { ext: 6, seed: WHITE });
-  rowX(X0, X1, 4.2, 4.45, zb0, zb1, MAT.SANDWICH, 10, { ext: 6, seed: GREEN });
-  rowX(X0, X1, 4.45, HW, zb0, zb1, MAT.SANDWICH, 10, { ext: 6, seed: RED });
-  // парапет
-  const yp = HW + RT;
-  rowX(X0, X1, yp, yp + 1.3, Z1 - T, Z1, MAT.SANDWICH, 10, { ext: 5, seed: RED });
-  rowX(X0, X1, yp, yp + 0.8, Z0, Z0 + T, MAT.SANDWICH, 10, { ext: 6, seed: RED });
-  for (const [xa, xb, e] of [[X0, X0 + T, 2], [X1 - T, X1, 1]]) rowZ(xa, xb, yp, yp + 0.8, Z0 + T, Z1 - T, MAT.SANDWICH, 6, { ext: e, seed: RED });
+  for (const [ya, yb, sd] of [[3.2, 4.2, WHITE], [4.2, 4.45, GREEN], [4.45, 5.6, RED], [5.6, WTOP, RED]]) rowX(X0, X1, ya, yb, zb0, zb1, MAT.SANDWICH, 10, { ext: 6, seed: sd });
   // вывески, козырёк над входом
   signBox('pyat_main', 5, -11.5, 4.5, 5.6, 7.4, Z1, Z1 + 0.15, 4, 1);
   signBox('pyat_enter', 5, 4.7, 7.3, 3.85, 4.4, Z1, Z1 + 0.1);
@@ -4997,7 +5052,7 @@ function buildPyaterochka() {
     bx(x - 0.45, x + 0.45, 0.25, 1.1, 5.0, 6.8, MAT.SANDWICH, { seed: GREY, anchored: false });
     bx(x - 0.45, x + 0.45, 1.1, 1.2, 5.0, 6.8, MAT.SANDWICH, { seed: RED, anchored: false });
   }
-  for (const x of [-7, 5]) bx(x - 1.1, x + 1.1, yp, yp + 1.3, -5.5, -4.2, MAT.METAL, { ds: 0.18, anchored: false });
+  for (const x of [-7, 5]) bx(x - 1.1, x + 1.1, HW + RT, HW + RT + 1.3, -5.5, -4.2, MAT.METAL, { ds: 0.18, anchored: false });
 }
 
 // ---------- 6. Ларьки у остановки ----------
@@ -5243,6 +5298,79 @@ function buildPost() {
   }
 }
 
+// ---------- 10. Склад OZON с пунктом выдачи ----------
+function buildOzon() {
+  LR = mulberry32(1998);
+  const X0 = -16, X1 = 16, Z0 = -10, Z1 = 10, T = 0.2, HC = 7.6, HW = 8.1, RT = 0.25;
+  const WTOP = 9.05, YB = WTOP - 2.8;   // стены выше кровли (парапет), синяя полоса — верхние 2.8 м
+  const WH = pal8(0, true), GR = pal8(1, false), BL = pal8(4, false);
+  const colX = [X0 + T + 0.15, -8, 0, 8, X1 - T - 0.15], colZ = [Z0 + T + 0.2, 0, Z1 - T - 0.2];
+  // пол
+  const fw = (X1 - X0 - 2 * T) / 5, fd = (Z1 - Z0 - 2 * T) / 3;
+  for (let i = 0; i < 5; i++) for (let k = 0; k < 3; k++) bx(X0 + T + i * fw, X0 + T + (i + 1) * fw, 0, 0.25, Z0 + T + k * fd, Z0 + T + (k + 1) * fd, MAT.CONCRETE, { anchored: true });
+  // стальной каркас: колонны, балки с зазором над колонной, сборная кровля внутри стен
+  for (const x of colX) for (const z of colZ) for (const [ya, yb] of [[0.25, 2.7], [2.7, 5.15], [5.15, HC]]) bx(x - 0.15, x + 0.15, ya, yb, z - 0.15, z + 0.15, MAT.METAL, { ds: 0.35 });
+  for (const z of colZ) for (let i = 0; i < colX.length - 1; i++) bx(colX[i] + 0.03, colX[i + 1] - 0.03, HC, HW, z - 0.15, z + 0.15, MAT.METAL, { ds: 0.3, simple: true });
+  const rx0 = X0 + T + 0.04, rx1 = X1 - T - 0.04, rw = (rx1 - rx0) / 8;
+  for (let i = 0; i < 8; i++) for (const [za, zb] of [[Z0 + T + 0.04, 0], [0, Z1 - T - 0.04]]) bx(rx0 + i * rw, rx0 + (i + 1) * rw, HW, HW + RT, za, zb, MAT.ROOFLT, { ds: 0.45, simple: true });
+  // фасад: трое ворот рампы, баннер «Требуются», пункт выдачи; сверху — синяя полоса с логотипом
+  const zf0 = Z1 - T, zf1 = Z1, zW = [Z1 - 0.13, Z1 - 0.07];
+  const solid = (a, b) => {
+    if (b - a < 0.05) return;
+    const n = Math.max(1, Math.round((b - a) / 4));
+    for (const [ya, yb] of [[0, 2.65], [2.65, 4.45], [4.45, YB]]) rowX(a, b, ya, yb, zf0, zf1, MAT.SANDWICH, n, { ext: 5, seed: WH });
+  };
+  let xc = X0;
+  for (const [a, b, dock] of [[-14.6, -11.4, true], [-10.1, -6.9, true], [-5.6, -2.4, true], [9.4, 14.8, false]]) {
+    solid(xc, a); xc = b;
+    const top = dock ? 3.6 : 3.2;
+    if (dock) bx(a, b, 0, top, zf0 + 0.05, zf1 - 0.05, MAT.SANDWICH, { ext: 5, seed: GR });   // секционные ворота
+    else win(a, b, 0.05, top, zW[0], zW[1], MAT.SHOPWIN, 0.41);
+    bx(a, b, top, YB, zf0, zf1, MAT.SANDWICH, { ext: 5, seed: WH });
+  }
+  solid(xc, X1);
+  signBox('ozon_band', 5, X0, X1, YB, WTOP, zf0, zf1, 8, 1);
+  signBox('ozon_hire', 5, -1.0, 7.0, 0.9, 3.9, Z1, Z1 + 0.08, 2, 1);
+  signBox('ozon', 5, 10.7, 13.5, 3.4, 4.4, Z1, Z1 + 0.12);
+  bx(9.2, 15.0, 3.2, 3.36, Z1, Z1 + 1.4, MAT.METAL, { ds: 0.25 });   // козырёк над пунктом выдачи
+  // торцы: слева — открытые ворота, в них стоит фура
+  for (const [xa, xb, e] of [[X0, X0 + T, 2], [X1 - T, X1, 1]]) {
+    if (e === 2) {
+      rowZ(xa, xb, 0, 3.6, Z0 + T, -5.4, MAT.SANDWICH, 2, { ext: e, seed: WH });
+      rowZ(xa, xb, 0, 3.6, -2.6, Z1 - T, MAT.SANDWICH, 4, { ext: e, seed: WH });
+      rowZ(xa, xb, 3.6, YB, Z0 + T, Z1 - T, MAT.SANDWICH, 5, { ext: e, seed: WH });
+    } else {
+      rowZ(xa, xb, 0, 2.65, Z0 + T, Z1 - T, MAT.SANDWICH, 5, { ext: e, seed: WH });
+      rowZ(xa, xb, 2.65, YB, Z0 + T, Z1 - T, MAT.SANDWICH, 5, { ext: e, seed: WH });
+    }
+    rowZ(xa, xb, YB, WTOP, Z0 + T, Z1 - T, MAT.SANDWICH, 5, { ext: e, seed: BL });
+  }
+  for (const [ya, yb, sd] of [[0, 2.65, WH], [2.65, YB, WH], [YB, WTOP, BL]]) rowX(X0, X1, ya, yb, Z0, Z0 + T, MAT.SANDWICH, 8, { ext: 6, seed: sd });
+  // стеллажи с коробками: четыре ряда по два яруса — падают домино
+  for (const zc of [-6.5, -3.0, 3.0, 6.5]) for (let i = 0; i < 6; i++) {
+    const xa = -14 + i * 4.5;
+    for (const [ya, yb] of [[0.25, 3.25], [3.25, 6.25]]) bx(xa, xa + 4.5, ya, yb, zc - 0.55, zc + 0.55, MAT.RACK, { anchored: false });
+  }
+  // пункт выдачи: стойка; у ворот — паллеты с коробками
+  bx(10.4, 14.2, 0.25, 1.2, 7.6, 8.1, MAT.SANDWICH, { seed: BL, anchored: false });
+  for (const x of [-13.6, -9.1, -4.6]) {
+    bx(x, x + 1.2, 0.25, 0.4, 8.0, 9.0, MAT.FURNITURE, { anchored: false, seed: 0.1 / 7.77 });
+    for (let s = 0; s < 1 + ((LR() * 3) | 0); s++) bx(x + 0.05, x + 1.15, 0.4 + s * 0.6, 1.0 + s * 0.6, 8.05, 8.95, MAT.BOXES, { anchored: false });
+  }
+  // фура OZON у бокового дока
+  const tz0 = -5.25, tz1 = -2.75, tr1 = X0 - 0.3, tr0 = tr1 - 12, cx1 = tr0 - 0.1, cx0 = cx1 - 2.3;
+  const wheel = (xw) => { for (const [za, zb] of [[tz0 + 0.05, tz0 + 0.55], [tz1 - 0.55, tz1 - 0.05]]) bx(xw - 0.5, xw + 0.5, 0, 0.95, za, zb, MAT.METAL, {}); };
+  for (const xw of [tr1 - 2.6, tr1 - 3.9, cx0 + 0.7, tr0 + 0.9]) wheel(xw);
+  for (const [za, zb] of [[tz0 + 0.3, tz0 + 0.55], [tz1 - 0.55, tz1 - 0.3]]) {
+    bx(tr0 + 1.6, tr1, 0.95, 1.3, za, zb, MAT.METAL, { ds: 0.3 });     // рама прицепа
+    bx(cx0, tr0 + 1.5, 0.95, 1.1, za, zb, MAT.METAL, { ds: 0.3 });     // рама тягача
+  }
+  bx(tr0 + 0.4, tr0 + 1.4, 1.1, 1.3, tz0 + 0.3, tz1 - 0.3, MAT.METAL, { ds: 0.3 });   // седло
+  signBox('ozon_truck', 5, tr0, tr1, 1.3, 3.9, tz0, tz1, 3, 1);
+  bx(cx0, cx1, 1.1, 3.8, tz0, tz1, MAT.SANDWICH, { seed: pal8(0, false) });          // кабина
+  win(cx0 - 0.04, cx0 - 0.01, 2.3, 3.4, tz0 + 0.2, tz1 - 0.2, MAT.SHOPWIN);
+}
+
 const LEVELS = [
   {
     id: 'khrush', name: 'Хрущёвка', build: buildKhrushchevka,
@@ -5296,7 +5424,7 @@ const LEVELS = [
   {
     id: 'mall', name: 'ТЦ «Горизонт»', build: buildMall, isNew: true,
     desc: 'Два этажа, сорок вывесок и ни одного архитектора. Пункт выдачи, ломбард, «Красное&Белое». Сноси, пока не открыли ещё одну аптеку.',
-    shout: ['ТЦ ЗАКРЫЛСЯ!', 'АРЕНДАТОРЫ СЪЕХАЛИ!', 'ЗАКАЗ ОТМЕНЁН!'],
+    shout: ['ТЦ ЗАКРЫЛСЯ!', 'АРЕНДАТОРЫ СЪЕХАЛИ!', 'ВСЁ ПО 99!'],
     crane: { x: -14, z: 30, heading: 2.66, slew: 0, boom: 57, rope: 12 }, goal: 0.85, par: 300,
     look: new V3(0, 5, 0), icon: 'mall', tod: 'sunset', menuR: 52,
   },
@@ -5306,6 +5434,13 @@ const LEVELS = [
     shout: ['ПОСЫЛКА ДОСТАВЛЕНА!', 'ВРУЧЕНО АДРЕСАТУ!', 'УШЛИ НА ОБЕД!'],
     crane: { x: -13, z: 28, heading: 2.66, slew: 0, boom: 55, rope: 19 }, goal: 0.85, par: 150,
     look: new V3(0, 2.5, 0), icon: 'post', tod: 'day', menuR: 40,
+  },
+  {
+    id: 'ozon', name: 'Склад OZON', build: buildOzon, isNew: true,
+    desc: 'Склад на 30 000 посылок, и все со статусом «Приедет завтра». Сноси аккуратно — где-то там лежит твой заказ.',
+    shout: ['ЗАКАЗ ОТМЕНЁН!', 'ВОЗВРАТ ОФОРМЛЕН!', 'ПОСЫЛКИ ЛЕТЯТ!'],
+    crane: { x: -14, z: 31, heading: 2.66, slew: 0, boom: 57, rope: 13 }, goal: 0.85, par: 300,
+    look: new V3(-2, 4.5, 0), icon: 'ozon', tod: 'day', menuR: 54,
   },
 ];
 
@@ -6821,7 +6956,7 @@ const audio = {
     this.voice(1400);
     const t = this.ctx.currentTime + 0.01 + o.dist / 340 * 0.5;
     const brick = mat === MAT.BRICK || mat === MAT.CHIMNEY || mat === MAT.PLASTER || mat === MAT.SIGNWALL;
-    const tin = mat === MAT.SANDWICH || mat === MAT.GATE || mat === MAT.SIGN || mat === MAT.SHELF;
+    const tin = mat === MAT.SANDWICH || mat === MAT.GATE || mat === MAT.SIGN || mat === MAT.SHELF || mat === MAT.RACK;
     this.tone(o.node, t, 'sine', 70 + Math.random() * 25, 34, lvl * (tin ? 0.4 : 1.0), 0.006, 0.35 + lvl * 0.5);
     if (tin) {   // жесть: звонкий дребезг профлиста и ворот
       for (const [f, d] of [[380 + Math.random() * 90, 0.38], [1050 + Math.random() * 160, 0.24], [2300 + Math.random() * 300, 0.13]])
@@ -7277,6 +7412,7 @@ const FOREMAN = [
   'P — кадр для отчёта. Прораб любит, когда пыль в контровом свете.',
   'Не стой под стрелой. Особенно если ты дом.',
   'Кран ездит на стрелочках. Медленно, но с достоинством.',
+  'Стеллажи на складе падают домино. Начни с крайнего.',
 ];
 
 // ---------- События разрушения -> эффекты, звук, камера ----------
@@ -7499,7 +7635,7 @@ function setKeysMode(m) {
 setKeysMode(keysMode);
 const hudCache = {};
 function setText(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
-// Сколько ещё "стоит": каркас + всё, что возвышается над завалом (выше 3.5 м); фундамент не считается
+// Сколько ещё "стоит": каркас + всё, что возвышается над завалом (выше 3.5 м и не просело); фундамент не считается
 let demolishMass = 1, standingMass = 1, lastStandCalc = -1;
 function computeStanding() {
   let st = 0;
@@ -7508,7 +7644,8 @@ function computeStanding() {
     if (p.state === PS.ATTACHED) st += p.mass;
     else if (p.state === PS.DYNAMIC && p.body) {
       pieceWorldPose(p, _v4);
-      if (_v4.y > 3.5) st += p.mass;
+      // «стоит», только если высоко и не просел: кровля, упавшая на стеллажи, уже обрушена
+      if (_v4.y > 3.5 && _v4.y > p.pos.y - 1.2) st += p.mass;
     }
   }
   standingMass = st;
@@ -7602,6 +7739,8 @@ const ICONS = {
   garage: ISVG(IR(1, 14, 38, 2, '#4a4d52') + IR(2, 16, 36, 20, '#a8553c') + IR(3.5, 20, 7, 16, '#4f7a4a') + IR(12.5, 20, 7, 16, '#6b4a36') + IR(21.5, 20, 7, 16, '#3f5f86') + IR(30.5, 20, 7, 16, '#7a7d80') +
     '<path d="M5 26 q1.5 -2 3 0 t3 0" stroke="#fff" stroke-width="1.1" fill="none"/>'),
   mall: ISVG(IR(2, 12, 36, 24, '#cfd3d6') + IR(9, 7, 22, 4.5, '#1f5fb4') + IWIN(4, 15, 4, 1, 8.3, 0, 6.5, 4, '#39404a') + IR(3, 21.5, 8, 3, '#8d2bd6') + IR(12, 21.5, 7, 3, '#005bff') + IR(20, 21.5, 8, 3, '#d9261c') + IR(29, 21.5, 8, 3, '#1f9d55') + IR(3, 26, 34, 9, '#2f4a5c')),
+  ozon: ISVG(IR(2, 15, 36, 21, '#eef0f2') + IR(2, 9, 36, 6.5, '#005bff') + '<text x="20" y="14.4" font-family="Arial,sans-serif" font-weight="900" font-size="5.6" fill="#fff" text-anchor="middle">OZON</text>' +
+    IR(4.5, 24, 7, 12, '#c5ccd6') + IR(14, 24, 7, 12, '#c5ccd6') + IR(26.5, 26, 9, 10, '#2f4a5c') + IR(27, 22.5, 8, 2.6, '#005bff')),
   post: ISVG(IR(2, 14, 36, 2, '#5a6068') + IR(3, 16, 34, 20, '#e9ecef') + IR(5, 18, 30, 5.5, '#0b5cad') + IR(6, 27, 6, 6, '#39404a') + IR(16, 27, 6, 6, '#39404a') + IR(27, 26, 6, 10, '#6b4a2f') +
     '<path d="M16 4 h8 v6 h-8 z M16 4 l4 3 l4 -3" stroke="#0b5cad" stroke-width="1.4" fill="#fff" stroke-linejoin="round"/>'),
 };
@@ -7995,7 +8134,7 @@ setTimeout(() => { $('loading').classList.add('fade'); setTimeout(() => $('loadi
 requestAnimationFrame((t) => { last = t; frame(t); });
 
 // отладка из консоли
-window.__game = { ground, groundMat, getQ: () => Q, setQ: (k, v) => { Q[k] = v; if (k === 'msaa') post.resize(); }, post, applyTOD, TOD, drawFrame: () => post.render(), atmU, groundU, renderer, scene, camera, hookBlock, rig, ballGroup, craneModel, game, crane, ballState, get pieces() { return pieces; }, get bonds() { return bonds; }, bodyRecs, get world() { return world; }, fx, cam, input, keys, LEVELS, loadLevel, runLoadStep, tippingCheck, prof, audio, api: { shatterPiece, pulverizePiece, impactPiece, PS, MAT, get maxStress() { return maxStressRatio; }, get simTime() { return simTime; } }, stats: () => ({ fps: fpsAvg, frameMs: frameMsAvg, physMs, bodies: bodyRecs.size, attached: pieces.filter(p => p.state === PS.ATTACHED).length, pct: game.pct }) };
+window.__game = { signScale, ground, groundMat, getQ: () => Q, setQ: (k, v) => { Q[k] = v; if (k === 'msaa') post.resize(); }, post, applyTOD, TOD, drawFrame: () => post.render(), atmU, groundU, renderer, scene, camera, hookBlock, rig, ballGroup, craneModel, game, crane, ballState, get pieces() { return pieces; }, get bonds() { return bonds; }, bodyRecs, get world() { return world; }, fx, cam, input, keys, LEVELS, loadLevel, runLoadStep, tippingCheck, prof, audio, api: { shatterPiece, pulverizePiece, impactPiece, PS, MAT, get maxStress() { return maxStressRatio; }, get simTime() { return simTime; } }, stats: () => ({ fps: fpsAvg, frameMs: frameMsAvg, physMs, bodies: bodyRecs.size, attached: pieces.filter(p => p.state === PS.ATTACHED).length, pct: game.pct }) };
 </script>
 </body>
 </html>
