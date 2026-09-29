@@ -87,7 +87,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .lvl .ico{flex:none;width:48px;height:48px;border-radius:5px;background:rgba(0,0,0,.3);box-shadow:inset 0 1px 3px rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center}
 .lvl .ico svg{width:40px;height:40px}
 .lvl .tx{display:flex;flex-direction:column;gap:6px;min-width:0}
-.lvl h3{font-family:Oswald,sans-serif;font-weight:700;font-size:15.5px;letter-spacing:.05em;text-transform:uppercase;color:#f1efe9;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lvl h3{font-family:Oswald,sans-serif;font-weight:700;font-size:15.5px;letter-spacing:.05em;text-transform:uppercase;color:#f1efe9;line-height:1.1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .lvl .meta{display:flex;align-items:center;gap:8px;font-family:"Share Tech Mono",monospace;font-size:12px;color:#8a9098}
 .stars{letter-spacing:1px;color:#40444b}
 .stars .on{color:var(--y);text-shadow:0 0 10px rgba(255,190,30,.6)}
@@ -226,6 +226,8 @@ body.nohud #hud{display:none}
 .res-stats div{display:flex;flex-direction:column;gap:5px}
 .res-stats .lcd{font-size:19px;text-align:center}
 .res-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.props-line{margin-top:8px;color:#aeb3bb;font-size:13.5px;line-height:1.4}
+.pop.say{font-family:Rubik,sans-serif;font-weight:700;font-size:14px;color:#1a1300;background:#ffd54a;padding:3px 10px;border-radius:12px;text-shadow:none;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .quip{margin-top:10px;color:#e8d9a6;font-size:15px;font-style:italic;line-height:1.45}
 .newrec{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:3px;background:rgba(88,255,122,.12);color:var(--green);font-family:Oswald;font-weight:600;letter-spacing:.12em;font-size:13px}
 
@@ -389,6 +391,7 @@ body.nohud #hud{display:none}
     <div class="stamp">ОБЪЕКТ СНЕСЁН</div>
     <div class="sub" id="res-sub">Хрущёвка</div>
     <div class="quip" id="res-quip"></div>
+    <div class="props-line hidden" id="res-props"></div>
     <div class="res-lamps" id="res-stars"><div class="lamp a"><i></i></div><div class="lamp a"><i></i></div><div class="lamp a"><i></i></div></div>
     <div id="res-rec"></div>
     <div class="res-stats">
@@ -561,14 +564,6 @@ const TOD = {
     hemiSky: [0.42, 0.52, 0.82], hemiGnd: [0.36, 0.26, 0.18], hemiI: 0.42, env: 0.32, exposure: 1.18,
     sat: 1.07, contrast: 1.06, tint: [1.02, 1.0, 0.97], wet: 1.0, puddles: 1.0, lights: 0.12, vol: 1.0,
   },
-  morning: {
-    label: 'Утро в тумане', sunRel: 42, el: 8, sunI: 2.9,
-    sun: [1.0, 0.82, 0.62], zen: [0.3, 0.4, 0.58], hor: [0.8, 0.8, 0.8], horSun: [1.4, 1.12, 0.84], gnd: [0.22, 0.22, 0.22],
-    cLit: [1.2, 1.1, 0.98], cShade: [0.62, 0.64, 0.68], cover: 0.3, disk: 26, halo: 1.3,
-    fog: [0.42, 0.45, 0.5], fogDens: 0.0015, fogFall: 0.03, mie: 0.72, sunScat: 0.085, ambScat: 1.0,
-    hemiSky: [0.58, 0.62, 0.72], hemiGnd: [0.34, 0.32, 0.28], hemiI: 0.75, env: 0.55, exposure: 0.95,
-    sat: 0.92, contrast: 1.06, tint: [0.99, 1.0, 1.02], wet: 1.0, puddles: 0.85, lights: 0.2, vol: 1.0,
-  },
   sunset: {
     label: 'Закат', sunRel: -16, el: 4.2, sunI: 2.6,
     sun: [1.0, 0.46, 0.2], zen: [0.09, 0.12, 0.3], hor: [0.5, 0.4, 0.46], horSun: [1.7, 0.66, 0.26], gnd: [0.12, 0.1, 0.1],
@@ -577,16 +572,8 @@ const TOD = {
     hemiSky: [0.36, 0.38, 0.6], hemiGnd: [0.3, 0.22, 0.18], hemiI: 0.62, env: 0.5, exposure: 1.12,
     sat: 1.1, contrast: 1.07, tint: [1.04, 0.99, 0.95], wet: 1.0, puddles: 1.0, lights: 0.55, vol: 1.1,
   },
-  day: {
-    label: 'День после дождя', sunRel: -135, el: 38, sunI: 3.5,
-    sun: [1.0, 0.94, 0.85], zen: [0.1, 0.25, 0.62], hor: [0.62, 0.72, 0.86], horSun: [0.98, 0.94, 0.86], gnd: [0.18, 0.18, 0.17],
-    cLit: [1.35, 1.33, 1.3], cShade: [0.52, 0.56, 0.64], cover: 0.5, disk: 40, halo: 0.7,
-    fog: [0.56, 0.65, 0.8], fogDens: 0.00038, fogFall: 0.003, mie: 0.7, sunScat: 0.08, ambScat: 1.0,
-    hemiSky: [0.52, 0.64, 0.9], hemiGnd: [0.34, 0.3, 0.25], hemiI: 0.78, env: 0.6, exposure: 0.96,
-    sat: 1.05, contrast: 1.04, tint: [1.0, 1.0, 1.0], wet: 0.6, puddles: 0.8, lights: 0.05, vol: 0.8,
-  },
 };
-const TOD_KEYS = ['morning', 'day', 'golden', 'sunset'];
+const TOD_KEYS = ['golden', 'sunset'];
 let curTOD = TOD.golden, curTODKey = 'golden';
 
 // ---------- Небо (общая функция: купол, запекание для отражений и освещения) ----------
@@ -794,6 +781,45 @@ function stampTrack(cx, cz, dx, dz, phase, str = 1) {
   u.uC.value.set(cx, cz); u.uDir.value.set(dx, dz); u.uPhase.value = phase; u.uStr.value = str;
   const r = renderer, old = r.getRenderTarget();
   r.setRenderTarget(trackRT); r.render(trackScene, trackCam); r.setRenderTarget(old);
+}
+// воронка от шара / вмятина от упавшей плиты: чаша, валик по краю, трещины лучами
+const craterMat = new THREE.ShaderMaterial({
+  depthTest: false, depthWrite: false, transparent: true, blending: THREE.CustomBlending,
+  blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendEquation: THREE.AddEquation,
+  blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneFactor, blendEquationAlpha: THREE.MaxEquation,
+  uniforms: { uC: { value: new THREE.Vector2() }, uR: { value: 1 }, uStr: { value: 1 }, uSeed: { value: 0 }, uCrack: { value: 1 },
+    uRect: { value: new THREE.Vector3(TRACK_X0, TRACK_Z0, TRACK_SIZE) } },
+  vertexShader: /* glsl */`
+    uniform vec2 uC; uniform float uR; uniform vec3 uRect; varying vec2 vL;
+    void main(){
+      vL = position.xy * uR * 4.4;
+      vec2 uv = (uC + vL - uRect.xy) / uRect.z;
+      gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
+    }`,
+  fragmentShader: /* glsl */`
+    uniform float uR; uniform float uStr; uniform float uSeed; uniform float uCrack; varying vec2 vL;
+    float th(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+    void main(){
+      float r = length(vL) / uR, a = atan(vL.y, vL.x);
+      float bowl = 1.0 - smoothstep(0.15, 1.0, r);
+      float rim = exp(-pow((r - 1.02) / 0.2, 2.0));
+      float wob = sin(a * 3.0 + uSeed) * 0.5 + sin(a * 7.0 + uSeed * 2.3) * 0.3;
+      float rays = pow(max(0.0, cos(a * 5.0 + uSeed * 4.0 + wob)), 60.0) * smoothstep(0.5, 0.8, r) * (1.0 - smoothstep(1.3, 2.1, r)) * uCrack;
+      float crumbs = step(0.86, th(floor(vL * 10.0 + uSeed))) * (1.0 - smoothstep(1.0, 1.9, r)) * smoothstep(0.7, 1.0, r);
+      float h = 0.5 - bowl * 0.32 + rim * 0.16 - rays * 0.1;
+      float mud = min(1.0, bowl * 0.95 + rim * 0.4 + rays * 0.8 + crumbs * 0.5);
+      float al = clamp(max(max(bowl, rim * 0.85), max(rays, crumbs * 0.7)), 0.0, 1.0) * uStr;
+      gl_FragColor = vec4(mud, h, bowl * 0.35, al);
+    }`,
+});
+const craterQuad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), craterMat);
+craterQuad.frustumCulled = false;
+const craterScene = new THREE.Scene(); craterScene.add(craterQuad);
+function stampCrater(cx, cz, r, str = 1, crack = 1) {
+  const u = craterMat.uniforms;
+  u.uC.value.set(cx, cz); u.uR.value = r; u.uStr.value = str; u.uSeed.value = Math.random() * 60; u.uCrack.value = crack;
+  const rr = renderer, old = rr.getRenderTarget();
+  rr.setRenderTarget(trackRT); rr.render(craterScene, trackCam); rr.setRenderTarget(old);
 }
 const RIPPLES = 12;
 const groundU = {
@@ -2435,7 +2461,7 @@ function updateCity(dt, t) {
 const MAT = {
   PANEL: 0, PLINTH: 1, SLAB: 2, INNER: 3, BRICK: 4, CONCRETE: 5, WINDOW: 6, BALCONY: 7,
   ROOF: 8, DOOR: 9, METAL: 10, WINDOW_IND: 11, CHIMNEY: 12, FURNITURE: 13,
-  SIGN: 14, SANDWICH: 15, PLASTER: 16, GATE: 17, SHOPWIN: 18, SHELF: 19, BOXES: 20, SIGNWALL: 21, ROOFLT: 22, RACK: 23,
+  SIGN: 14, SANDWICH: 15, PLASTER: 16, GATE: 17, SHOPWIN: 18, SHELF: 19, BOXES: 20, SIGNWALL: 21, ROOFLT: 22, RACK: 23, CAR: 24, CARGLASS: 25,
 };
 const stressUniform = { value: 0 };
 const pieceTimeUniform = { value: 0 };
@@ -2612,7 +2638,7 @@ pieceMaterial.onBeforeCompile = (sh) => {
           }
           float rust = smoothstep(0.62, 0.9, pn(vec2(uv.x * 3.0, uv.y * 0.35))) * (axis != 1.0 ? 1.0 : 0.0);
           col = mix(col, L(vec3(0.45, 0.3, 0.2)), rust * 0.35);
-        } else if (m == 6 || m == 11 || m == 18) { // окно, витрина
+        } else if (m == 6 || m == 11 || m == 18 || m == 25) { // окно, витрина, стекло машины
           vec2 lp, hd;
           if (vDims.z <= vDims.x) { lp = vUnit.xy * vDims.xy; hd = vDims.xy * 0.5; }
           else { lp = vUnit.zy * vDims.zy; hd = vDims.zy * 0.5; }
@@ -2623,6 +2649,8 @@ pieceMaterial.onBeforeCompile = (sh) => {
             float mx = -hd.x + hd.x * 2.0 * 0.4;
             fr = max(fr, step(abs(lp.x - mx), 0.035));
             fr = max(fr, step(abs(lp.y - (hd.y - 0.48)), 0.03) * step(mx, lp.x));
+          } else if (m == 25) {         // автомобильное стекло: тонкий резиновый кант
+            fr = max(step(hd.x - 0.03, abs(lp.x)), step(hd.y - 0.03, abs(lp.y)));
           } else if (m == 18) {         // витрина: большие стёкла в тонком алюминии
             float nC = max(1.0, floor(hd.x * 2.0 / 1.6 + 0.5)), cwS = hd.x * 2.0 / nC;
             float qx = abs(fract((lp.x + hd.x) / cwS + 0.5) - 0.5) * cwS;
@@ -2634,7 +2662,7 @@ pieceMaterial.onBeforeCompile = (sh) => {
             fr = max(step(min(q.x, q.y), 0.025), max(step(hd.x - 0.08, abs(lp.x)), step(hd.y - 0.08, abs(lp.y))));
           }
           if (fr > 0.5) {
-            col = m == 6 ? L(vec3(0.88, 0.87, 0.84)) : m == 18 ? L(vec3(0.7, 0.72, 0.74)) : L(vec3(0.25, 0.3, 0.27));
+            col = m == 6 ? L(vec3(0.88, 0.87, 0.84)) : m == 18 ? L(vec3(0.7, 0.72, 0.74)) : m == 25 ? vec3(0.02) : L(vec3(0.25, 0.3, 0.27));
             pRough = 0.5;
             if (m == 18) { pRough = 0.32; pMetal = 0.85; }
           } else {
@@ -2647,6 +2675,7 @@ pieceMaterial.onBeforeCompile = (sh) => {
             col = mix(glass, curtain, cm * 0.85);
             col = mix(col, L(vec3(0.45, 0.47, 0.44)), dirty);
             pRough = mix(0.05, 0.5, dirty + cm * 0.6);
+            if (m == 25) { col = L(vec3(0.07, 0.08, 0.09)); pRough = 0.04; }
             if (m == 18) {   // за витриной — торговый зал: стеллажи внизу, лампы под потолком
               float fy = (lp.y + hd.y) / (2.0 * hd.y);
               vec3 room = mix(L(vec3(0.14, 0.13, 0.12)), L(vec3(0.42, 0.4, 0.36)), smoothstep(0.1, 0.95, fy));
@@ -2720,11 +2749,11 @@ pieceMaterial.onBeforeCompile = (sh) => {
           float ci = floor(seed * 8.0);
           vec3 pc = ci < 0.5 ? vec3(0.9, 0.88, 0.83) : ci < 1.5 ? vec3(0.68, 0.79, 0.88) : ci < 2.5 ? vec3(0.93, 0.83, 0.56)
                   : ci < 3.5 ? vec3(0.9, 0.74, 0.7) : ci < 4.5 ? vec3(0.75, 0.86, 0.78) : ci < 5.5 ? vec3(0.92, 0.87, 0.75)
-                  : ci < 6.5 ? vec3(0.66, 0.66, 0.64) : vec3(0.78, 0.52, 0.4);
+                  : ci < 6.5 ? vec3(0.66, 0.66, 0.64) : vec3(0.27, 0.28, 0.3);
           bool outer = isExt || (ext < 0.5 && !isInt);
           if (outer) {
             col = L(pc) * (0.9 + 0.14 * pf(uv * 1.6)) * (0.97 + 0.03 * pn(uv * 45.0));
-            float chip = smoothstep(0.75, 0.78, pf(uv * 0.8 + seed * 7.0));
+            float chip = smoothstep(0.75, 0.78, pf(uv * 0.8 + seed * 7.0)) * step(ci, 6.5);   // тёмный современный фасад не облуплен
             if (chip > 0.001) {
               float row = floor(uv.y / 0.077), bxx = uv.x / 0.26 + mod(row, 2.0) * 0.5;
               float gl = gridL(vec2(bxx * 0.26, uv.y), vec2(0.26, 0.077), vec2(0.006), fade);
@@ -2783,6 +2812,15 @@ pieceMaterial.onBeforeCompile = (sh) => {
             } else col = L(vec3(0.08, 0.08, 0.09));
             pRough = 0.7; pMetal = (upr || rbeam) ? 0.5 : 0.0;
           } else col = L(vec3(0.95, 0.5, 0.1));
+        } else if (m == 24) {           // автомобильная краска: блестит, снизу грязь, у старых машин ржавчина
+          float ci = floor(seed * 8.0);
+          vec3 pc = ci < 0.5 ? vec3(0.92, 0.92, 0.9) : ci < 1.5 ? vec3(0.5, 0.06, 0.09) : ci < 2.5 ? vec3(0.86, 0.76, 0.56) : ci < 3.5 ? vec3(0.12, 0.2, 0.42)
+                  : ci < 4.5 ? vec3(0.16, 0.36, 0.22) : ci < 5.5 ? vec3(0.07, 0.07, 0.08) : ci < 6.5 ? vec3(0.7, 0.72, 0.74) : vec3(0.95, 0.45, 0.08);
+          col = L(pc) * (0.94 + 0.06 * pn(uv * 3.0));
+          col *= 1.0 - 0.35 * smoothstep(0.9, 0.2, vTexPos.y) * (0.6 + 0.4 * pn(uv * 6.0));
+          float rustC = smoothstep(0.7, 0.9, pf(uv * 2.2 + seed * 3.0)) * step(0.5, fract(seed * 13.0));
+          col = mix(col, L(vec3(0.42, 0.24, 0.12)), rustC * 0.6);
+          pRough = mix(0.22, 0.8, rustC); pMetal = 0.35;
         } else if (m == 20) {           // картонные коробки и посылки: скотч, наклейка
           vec2 blp = axis == 0.0 ? vec2(vUnit.z * vDims.z, vUnit.y * vDims.y) : axis == 1.0 ? vec2(vUnit.x * vDims.x, vUnit.z * vDims.z) : vec2(vUnit.x * vDims.x, vUnit.y * vDims.y);
           col = L(vec3(0.68, 0.52, 0.34)) * (0.9 + 0.12 * pn(uv * 7.0 + seed * 3.0));
@@ -2792,13 +2830,13 @@ pieceMaterial.onBeforeCompile = (sh) => {
           pRough = 0.9;
         }
         // швы между блоками
-        if (!inner && m != 6 && m != 11 && m != 18) {
+        if (!inner && m != 6 && m != 11 && m != 18 && m != 25) {
           vec3 dE = (0.5 - abs(vUnit)) * vDims;
           float e = axis == 0.0 ? min(dE.y, dE.z) : axis == 1.0 ? min(dE.x, dE.z) : min(dE.x, dE.y);
           col *= 1.0 - (1.0 - smoothstep(0.0, 0.04, e)) * ((m == 4 || m == 12) ? 0.22 : (m == 14 || m == 21) ? 0.12 : 0.42);
         }
         // погода: потёки на фасадах, грязь у земли, мокрые крыши и балконы
-        if (!inner && m != 6 && m != 11 && m != 13 && m != 14 && m != 18 && m != 19 && m != 20 && uStressView < 0.5) {
+        if (!inner && m != 6 && m != 11 && m != 13 && m != 14 && m != 18 && m != 19 && m != 20 && m != 24 && m != 25 && uStressView < 0.5) {
           float hgt = vTexPos.y;
           if (axis != 1.0 && (isExt || m == 5 || m == 12 || m == 1)) {
             float streak = smoothstep(0.58, 0.95, pn(vec2(uv.x * 2.7 + seed * 5.0, uv.y * 0.09))) * 0.15;
@@ -2813,7 +2851,7 @@ pieceMaterial.onBeforeCompile = (sh) => {
         }
         // трещины от ударов
         float dmg = vInfo.z;
-        if (dmg > 0.02 && m != 6 && m != 11 && m != 18) {
+        if (dmg > 0.02 && m != 6 && m != 11 && m != 18 && m != 25) {
           float c = crackF(uv * 1.9 + seed * 7.0);
           float c2 = crackF(uv * 4.3 + 3.0);
           float line = 1.0 - smoothstep(0.0, 0.025 + 0.05 * dmg, c);
@@ -3137,110 +3175,49 @@ defSign('pyat_promo', 4.6, 2.5, 896, 0, (g, w, h, R) => {
   sGrime(g, w, h, R, 0.18);
 });
 
-// ---------- ларьки и остановка ----------
-const icFlower = (g, x, y, s) => {
-  g.fillStyle = '#fff';
-  for (let i = 0; i < 5; i++) { const a = i * TAU / 5 - Math.PI / 2; g.beginPath(); g.arc(x + s / 2 + Math.cos(a) * s * 0.23, y + s / 2 + Math.sin(a) * s * 0.23, s * 0.17, 0, TAU); g.fill(); }
-  g.fillStyle = '#ffd23a'; g.beginPath(); g.arc(x + s / 2, y + s / 2, s * 0.13, 0, TAU); g.fill();
-};
-const icKey = (g, x, y, s) => {
-  g.strokeStyle = '#ffd23a'; g.lineWidth = s * 0.1; g.lineCap = 'round';
-  g.beginPath(); g.arc(x + s * 0.28, y + s * 0.5, s * 0.17, 0, TAU); g.stroke();
-  g.beginPath(); g.moveTo(x + s * 0.45, y + s * 0.5); g.lineTo(x + s * 0.95, y + s * 0.5);
-  g.moveTo(x + s * 0.78, y + s * 0.5); g.lineTo(x + s * 0.78, y + s * 0.68); g.moveTo(x + s * 0.92, y + s * 0.5); g.lineTo(x + s * 0.92, y + s * 0.64); g.stroke();
-};
-const icCup = (g, x, y, s) => {
-  g.fillStyle = '#f3e3c3';
-  g.beginPath(); g.moveTo(x + s * 0.2, y + s * 0.36); g.lineTo(x + s * 0.72, y + s * 0.36); g.lineTo(x + s * 0.64, y + s * 0.94); g.lineTo(x + s * 0.28, y + s * 0.94); g.closePath(); g.fill();
-  g.fillStyle = '#c8a878'; g.fillRect(x + s * 0.16, y + s * 0.27, s * 0.6, s * 0.1);
-  g.strokeStyle = '#f3e3c3'; g.lineWidth = s * 0.05; g.lineCap = 'round';
-  for (const dx of [0.36, 0.52]) { g.beginPath(); g.moveTo(x + s * dx, y + s * 0.2); g.quadraticCurveTo(x + s * (dx + 0.09), y + s * 0.1, x + s * dx, y + s * 0.02); g.stroke(); }
-};
-const icFruit = (g, x, y, s) => {
-  g.fillStyle = '#ff8c1a'; g.beginPath(); g.arc(x + s * 0.4, y + s * 0.6, s * 0.3, 0, TAU); g.fill();
-  g.fillStyle = '#e8322a'; g.beginPath(); g.arc(x + s * 0.7, y + s * 0.64, s * 0.24, 0, TAU); g.fill();
-  g.fillStyle = '#8ade52'; g.beginPath(); g.ellipse(x + s * 0.5, y + s * 0.24, s * 0.15, s * 0.07, -0.5, 0, TAU); g.fill();
-};
-function kioskSign(c1, c2, title, sub, tc, sc, icon) {
-  return (g, w, h, R) => {
-    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, c1); gr.addColorStop(1, c2);
-    g.fillStyle = gr; g.fillRect(0, 0, w, h);
-    g.fillStyle = 'rgba(255,255,255,.22)'; g.fillRect(0, h * 0.06, w, h * 0.03);
-    const ix = icon ? h * 0.95 : 0;
-    if (icon) icon(g, h * 0.12, h * 0.1, h * 0.8);
-    sText(g, title, ix + (w - ix) / 2, h * 0.42, { f: F_RUSSO, w: 400, s: h * 0.46, c: tc, max: (w - ix) * 0.9 });
-    sText(g, sub, ix + (w - ix) / 2, h * 0.8, { w: 500, s: h * 0.19, c: sc, max: (w - ix) * 0.9 });
-    sGrime(g, w, h, R, 0.12);
-  };
+// ---------- «Вкусно — и точка» ----------
+function vtLogo(g, x, y, s) {
+  // две палочки картошки фри и «точка»-бургер
+  g.save(); g.translate(x, y);
+  g.fillStyle = '#ffc72c';
+  g.save(); g.translate(s * 0.26, s * 0.52); g.rotate(-0.16); sRound(g, -s * 0.07, -s * 0.34, s * 0.14, s * 0.66, s * 0.07); g.fill(); g.restore();
+  g.save(); g.translate(s * 0.46, s * 0.46); g.rotate(-0.08); sRound(g, -s * 0.07, -s * 0.38, s * 0.14, s * 0.74, s * 0.07); g.fill(); g.restore();
+  g.fillStyle = '#ee4a1d'; g.beginPath(); g.arc(s * 0.75, s * 0.7, s * 0.16, 0, TAU); g.fill();
+  g.restore();
 }
-defSign('k_shawarma', 3.0, 0.8, 640, 1, kioskSign('#d62a1a', '#a3160c', 'ШАУРМА 24', 'она же шаверма', '#ffd23a', '#ffe9a8', null));
-defSign('k_flowers', 3.0, 0.8, 640, 1, kioskSign('#e8508a', '#b8285f', 'ЦВЕТЫ 24', 'букеты · горшки · шарики', '#ffffff', '#ffe3ef', icFlower));
-defSign('k_keys', 3.0, 0.8, 640, 1, kioskSign('#2356a8', '#163a78', 'КЛЮЧИ', 'ремонт обуви · заточка', '#ffffff', '#cfe0ff', icKey));
-defSign('k_coffee', 3.0, 0.8, 640, 1, kioskSign('#4a2c1c', '#2d190f', 'КОФЕ С СОБОЙ', 'корица — без доплаты', '#f3e3c3', '#d9c29a', icCup));
-defSign('k_fruit', 3.0, 0.8, 640, 1, kioskSign('#2f9442', '#1f6b2e', 'ОВОЩИ · ФРУКТЫ', 'свежее, чем кажется', '#ffffff', '#e6ffd9', icFruit));
-defSign('bus_ad', 1.6, 1.3, 512, 1, (g, w, h) => {
-  g.fillStyle = '#16181b'; g.fillRect(0, 0, w, h);
-  g.fillStyle = '#f2b418'; g.fillRect(0, 0, w, h * 0.05); g.fillRect(0, h * 0.95, w, h * 0.05);
-  sText(g, 'СНЕСЁМ', w / 2, h * 0.2, { f: F_RUSSO, w: 400, s: h * 0.17, c: '#f2b418', max: w * 0.86 });
-  sText(g, 'ВСЁ', w / 2, h * 0.38, { f: F_RUSSO, w: 400, s: h * 0.2, c: '#f2b418', max: w * 0.86 });
-  sText(g, 'быстро · громко · с пылью', w / 2, h * 0.54, { w: 500, s: h * 0.06, c: '#e9e6dd', max: w * 0.9 });
-  g.fillStyle = '#f2b418'; sRound(g, w * 0.1, h * 0.63, w * 0.8, h * 0.15, h * 0.03); g.fill();
-  sText(g, '8-800-БАХ-БАХ', w / 2, h * 0.708, { f: F_OSW, w: 700, s: h * 0.1, c: '#16181b', max: w * 0.74 });
-  sText(g, 'e-bash', w / 2, h * 0.87, { f: F_RUSSO, w: 400, s: h * 0.08, c: '#9aa0a8', max: w * 0.5 });
+defSign('vt_logo', 2.8, 2.8, 512, 1, (g, w, h) => { g.fillStyle = '#10593b'; g.fillRect(0, 0, w, h); vtLogo(g, w * 0.12, h * 0.12, w * 0.76); });
+defSign('vt_word', 10, 1.3, 1792, 1, (g, w, h) => {
+  g.fillStyle = '#10593b'; g.fillRect(0, 0, w, h);
+  vtLogo(g, h * 0.1, h * 0.1, h * 0.8);
+  sText(g, 'Вкусно — и точка', (h + w) / 2, h * 0.55, { s: h * 0.6, c: '#fff', max: w - h * 1.3 });
 });
-defSign('bus_sign', 0.7, 0.7, 256, 0, (g, w, h) => {
-  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
-  g.fillStyle = '#1d5bb0'; sRound(g, w * 0.04, h * 0.04, w * 0.92, h * 0.92, w * 0.06); g.fill();
-  g.fillStyle = '#fff'; sRound(g, w * 0.16, h * 0.12, w * 0.68, h * 0.76, w * 0.03); g.fill();
-  g.fillStyle = '#111'; sRound(g, w * 0.25, h * 0.27, w * 0.5, h * 0.38, w * 0.05); g.fill();
-  g.fillStyle = '#fff'; for (let i = 0; i < 3; i++) g.fillRect(w * (0.3 + i * 0.14), h * 0.32, w * 0.11, h * 0.12);
-  g.fillStyle = '#111'; for (const cx of [0.36, 0.64]) { g.beginPath(); g.arc(w * cx, h * 0.67, w * 0.06, 0, TAU); g.fill(); }
+defSign('vt_menu', 3.2, 1.8, 768, 1, (g, w, h) => {
+  g.fillStyle = '#16181a'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#10593b'; g.fillRect(0, 0, w, h * 0.16);
+  sText(g, 'МЕНЮ', w / 2, h * 0.085, { f: F_OSW, w: 700, s: h * 0.11, c: '#fff' });
+  const items = [['Биг Хит', '219 ₽', '#c8742c'], ['Гранд', '249 ₽', '#b85c2a'], ['Фри', '99 ₽', '#ffc72c'], ['Наггетсы', '169 ₽', '#e0a040'], ['Кола', '89 ₽', '#8a1c14'], ['Мороженое', '79 ₽', '#f2efe6']];
+  items.forEach(([n, p, c], i) => {
+    const x0 = (i % 2) * w / 2, y0 = h * 0.2 + ((i / 2) | 0) * h * 0.27;
+    g.fillStyle = c; sRound(g, x0 + w * 0.03, y0 + h * 0.03, w * 0.1, h * 0.18, h * 0.03); g.fill();
+    sText(g, n, x0 + w * 0.16, y0 + h * 0.12, { s: h * 0.075, c: '#fff', a: 'left', max: w * 0.2 });
+    sText(g, p, x0 + w * 0.47, y0 + h * 0.12, { s: h * 0.075, c: '#ffc72c', a: 'right', max: w * 0.12 });
+  });
+});
+defSign('vt_drive', 2.0, 0.7, 512, 1, (g, w, h) => {
+  g.fillStyle = '#10593b'; g.fillRect(0, 0, w, h);
+  sText(g, 'АВТО  →', w / 2, h * 0.54, { f: F_RUSSO, w: 400, s: h * 0.5, c: '#ffc72c', max: w * 0.9 });
+});
+defSign('vt_window', 1.6, 0.45, 384, 1, (g, w, h) => {
+  g.fillStyle = '#10593b'; g.fillRect(0, 0, w, h);
+  sText(g, 'ВЫДАЧА ЗАКАЗОВ', w / 2, h * 0.54, { f: F_OSW, w: 600, s: h * 0.5, c: '#fff', max: w * 0.9 });
+});
+defSign('vt_limit', 3.6, 0.5, 768, 0, (g, w, h) => {
+  for (let i = -2; i < 34; i++) { g.fillStyle = i % 2 ? '#141414' : '#ffc21a'; g.beginPath(); g.moveTo(i * h, 0); g.lineTo(i * h + h, 0); g.lineTo(i * h, h); g.lineTo(i * h - h, h); g.fill(); }
+  g.fillStyle = '#fff'; sRound(g, w * 0.3, h * 0.1, w * 0.4, h * 0.8, h * 0.1); g.fill();
+  sText(g, 'ВЫСОТА 2,2 м', w / 2, h * 0.53, { f: F_OSW, w: 700, s: h * 0.55, c: '#111', max: w * 0.36 });
 });
 
-// ---------- гаражи ----------
-function gatePaint(g, w, h, col, R) {
-  g.fillStyle = col; g.fillRect(0, 0, w, h);
-  for (let x = 0; x < w; x += w / 26) { g.fillStyle = 'rgba(0,0,0,.13)'; g.fillRect(x, 0, w / 90, h); g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(x + w / 90, 0, w / 150, h); }
-  g.strokeStyle = 'rgba(0,0,0,.38)'; g.lineWidth = w * 0.02; g.strokeRect(w * 0.01, h * 0.01, w * 0.98, h * 0.98);
-  g.beginPath(); g.moveTo(w / 2, 0); g.lineTo(w / 2, h); g.stroke();
-  g.lineWidth = w * 0.008; g.strokeRect(w * 0.58, h * 0.12, w * 0.3, h * 0.85);
-  for (let i = 0; i < 70; i++) {
-    const x = R() * w, y = h * (0.35 + R() * 0.65), r = w * (0.004 + R() * 0.028);
-    g.fillStyle = `rgba(${120 + R() * 40 | 0},${58 + R() * 22 | 0},28,${0.25 + R() * 0.45})`;
-    g.beginPath(); g.ellipse(x, y, r, r * (0.6 + R()), 0, 0, TAU); g.fill();
-  }
-}
-defSign('gar_sale', 3.15, 2.2, 640, 0, (g, w, h, R) => {
-  gatePaint(g, w, h, '#557d4c', R);
-  sSpray(g, 'ПРОДАМ', w * 0.47, h * 0.33, h * 0.21, '#f4f4ee', -0.05, R);
-  sSpray(g, 'ГАРАЖ', w * 0.5, h * 0.57, h * 0.23, '#f4f4ee', -0.03, R);
-  sSpray(g, 'ТОРГ', w * 0.74, h * 0.8, h * 0.1, '#ffd23a', -0.08, R);
-});
-defSign('gar_tsoi', 6.0, 2.6, 896, 0, (g, w, h, R) => {
-  g.fillStyle = '#b8b2a6'; g.fillRect(0, 0, w, h);
-  const bh = h / 40, bw = w / 24;
-  for (let r = 0; r < 40; r++) for (let c = -1; c < 25; c++) {
-    const x = (c + (r % 2) * 0.5) * bw, y = r * bh, t = R();
-    g.fillStyle = `rgb(${150 + t * 40 | 0},${62 + t * 22 | 0},${44 + t * 14 | 0})`;
-    g.fillRect(x + 1.2, y + 1.2, bw - 2.4, bh - 2.4);
-  }
-  g.fillStyle = 'rgba(232,228,216,.3)';
-  for (let i = 0; i < 12; i++) { g.beginPath(); g.ellipse(R() * w, R() * h, w * (0.03 + R() * 0.08), h * (0.05 + R() * 0.12), R(), 0, TAU); g.fill(); }
-  sSpray(g, 'ЦОЙ ЖИВ!', w * 0.46, h * 0.44, h * 0.3, '#15161a', -0.04, R);
-  sSpray(g, 'здесь был Вася', w * 0.79, h * 0.8, h * 0.07, '#f2f0ea', 0.03, R);
-});
-defSign('gar_tire', 2.75, 0.7, 640, 0, (g, w, h, R) => {
-  g.fillStyle = '#f1efe7'; g.fillRect(0, 0, w, h);
-  g.strokeStyle = '#c8201a'; g.lineWidth = h * 0.06; g.strokeRect(h * 0.05, h * 0.05, w - h * 0.1, h - h * 0.1);
-  // буквы от руки — каждая немного гуляет
-  const t = 'ШИНОМОНТАЖ';
-  sFont(g, 700, h * 0.46, F_RUBIK); let tw = g.measureText(t).width;
-  const k = Math.min(1, w * 0.86 / tw); sFont(g, 700, h * 0.46 * k, F_RUBIK); tw = g.measureText(t).width;
-  let x = (w - tw) / 2; g.fillStyle = '#c8201a'; g.textBaseline = 'middle'; g.textAlign = 'left';
-  for (const ch of t) { g.save(); g.translate(x, h * 0.43 + (R() - 0.5) * h * 0.06); g.rotate((R() - 0.5) * 0.12); g.fillText(ch, 0, 0); g.restore(); x += g.measureText(ch).width; }
-  sText(g, 'вулканизация · 24 ч', w / 2, h * 0.8, { w: 500, s: h * 0.16, c: '#222', max: w * 0.8 });
-  sGrime(g, w, h, R, 0.25);
-});
+// ---------- стройплощадка ----------
 defSign('tp_danger', 0.8, 0.55, 256, 0, (g, w, h) => {
   g.fillStyle = '#f7f6f0'; g.fillRect(0, 0, w, h);
   g.strokeStyle = '#d4231a'; g.lineWidth = h * 0.06; g.strokeRect(h * 0.04, h * 0.04, w - h * 0.08, h - h * 0.08);
@@ -3249,6 +3226,40 @@ defSign('tp_danger', 0.8, 0.55, 256, 0, (g, w, h) => {
   g.lineTo(w * 0.16, h * 0.88); g.lineTo(w * 0.22, h * 0.5); g.lineTo(w * 0.13, h * 0.5); g.closePath(); g.fill();
   sText(g, 'НЕ ВЛЕЗАЙ!', w * 0.63, h * 0.38, { s: h * 0.16, c: '#111', max: w * 0.56 });
   sText(g, 'УБЬЁТ!', w * 0.63, h * 0.64, { s: h * 0.2, c: '#111', max: w * 0.56 });
+});
+defSign('site_prorab', 0.8, 0.3, 256, 0, (g, w, h) => {
+  g.fillStyle = '#f4f2ea'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#1d4f91'; g.lineWidth = h * 0.08; g.strokeRect(h * 0.06, h * 0.06, w - h * 0.12, h - h * 0.12);
+  sText(g, 'ПРОРАБСКАЯ', w / 2, h * 0.55, { f: F_OSW, w: 700, s: h * 0.55, c: '#1d4f91', max: w * 0.84 });
+});
+defSign('site_wc', 0.9, 1.9, 256, 0, (g, w, h, R) => {   // дверь биотуалета
+  g.fillStyle = '#1f5fbf'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = w * 0.04; g.strokeRect(w * 0.06, h * 0.03, w * 0.88, h * 0.94);
+  for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(w * 0.25, h * (0.08 + i * 0.025), w * 0.5, h * 0.012); }
+  g.fillStyle = '#fff'; sRound(g, w * 0.2, h * 0.3, w * 0.6, h * 0.12, w * 0.05); g.fill();
+  sText(g, 'WC', w / 2, h * 0.36, { f: F_RUSSO, w: 400, s: h * 0.08, c: '#1f5fbf' });
+  g.fillStyle = '#d0d4da'; g.fillRect(w * 0.78, h * 0.5, w * 0.08, h * 0.06);
+  g.fillStyle = '#e8281c'; g.fillRect(w * 0.72, h * 0.58, w * 0.16, h * 0.02);
+  sGrime(g, w, h, R, 0.2);
+});
+defSign('site_gazel', 4.0, 1.7, 1024, 0, (g, w, h, R) => {
+  g.fillStyle = '#f2f2ef'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#e8281c'; g.fillRect(0, h * 0.74, w, h * 0.08);
+  sText(g, 'ГРУЗОПЕРЕВОЗКИ', w / 2, h * 0.2, { f: F_RUSSO, w: 400, s: h * 0.2, c: '#1a1a1a', max: w * 0.9 });
+  sText(g, 'грузчики · переезды · вывоз мусора', w / 2, h * 0.42, { w: 500, s: h * 0.09, c: '#333', max: w * 0.9 });
+  sText(g, 'перевезём даже дом — частями', w / 2, h * 0.59, { s: h * 0.1, c: '#e8281c', max: w * 0.9 });
+  sGrime(g, w, h, R, 0.25);
+});
+defSign('site_passport', 3.0, 2.0, 768, 0, (g, w, h, R) => {
+  g.fillStyle = '#f4f2ea'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#1d4f91'; g.fillRect(0, 0, w, h * 0.16);
+  sText(g, 'ПАСПОРТ ОБЪЕКТА', w / 2, h * 0.085, { f: F_OSW, w: 700, s: h * 0.1, c: '#fff' });
+  [['Объект:', 'всё, что стоит'], ['Заказчик:', 'гравитация'], ['Подрядчик:', 'ООО «тут про ии»'], ['Прораб:', 'на объекте (где-то)'], ['Начало работ:', 'сегодня'], ['Окончание:', 'как получится']].forEach(([a, b], i) => {
+    const y = h * (0.27 + i * 0.12);
+    sText(g, a, w * 0.06, y, { w: 600, s: h * 0.065, c: '#555', a: 'left' });
+    sText(g, b, w * 0.42, y, { s: h * 0.065, c: '#111', a: 'left', max: w * 0.54 });
+  });
+  sGrime(g, w, h, R, 0.15);
 });
 
 // ---------- ТЦ ----------
@@ -3479,6 +3490,7 @@ MP[MAT.BOXES]    = { density: 110, tough: 2e3, sigC: 0.1e6, sigT: 0.03e6, tau: 0
 MP[MAT.SIGNWALL] = Object.assign({}, MP[MAT.BRICK]);
 // сборная кровля по балкам: стыки слабые — без опоры панель проваливается
 MP[MAT.RACK]     = { density: 100, tough: 1.5e3, sigC: 0.2e6, sigT: 0.05e6, tau: 0.04e6, sf: 2.0, bondE: 3e3, margin: 0.2, snd: 2, debris: 0xb08850 };
+MP[MAT.CAR]      = { density: 220, tough: 14e3, sigC: 0.5e6, sigT: 0.2e6, tau: 0.15e6, sf: 2.0, bondE: 12e3, margin: 0.4, snd: 2, debris: 0x777777 };
 MP[MAT.ROOFLT]   = { density: 1450, tough: 30e3, sigC: 0.4e6, sigT: 0.01e6, tau: 0.006e6, sf: 1.5, bondE: 20e3, margin: 0.3, snd: 0, debris: 0x8f8f8c };
 const SHATTER_K = 1.7;       // во сколько раз превысить прочность, чтобы блок раскололся
 let physPressure = 0;        // 0..1 — насколько физика не успевает (тогда меньше осколков)
@@ -3563,7 +3575,7 @@ function makePiece(o) {
     kind: 'piece', id: pieces.length, mat: o.mat, mp,
     pos: o.pos.clone(), quat: o.quat ? o.quat.clone() : new Q4(), half: o.half.clone(), dims: o.half.clone().multiplyScalar(2),
     ext: o.ext || 0, seed: o.seed != null ? o.seed : Math.random(), tex: o.tex ? o.tex.clone() : o.pos.clone(),
-    anchored: !!o.anchored, noAuto: !!o.noAuto, simple: !!o.simple,
+    anchored: !!o.anchored, noAuto: !!o.noAuto, simple: !!o.simple, prop: o.prop || 0,
     state: PS.ATTACHED, body: null, collider: null, lp: new V3(), lq: new Q4(), L: new M4(),
     bonds: [], windows: [], damage: 0, stress: 0, u: 0, ni: -1, _v: 0, _w: 0, _d: 0,
     inst: -1, pool: null, vol: 0, mass: 0, tough: 0,
@@ -4503,7 +4515,7 @@ function bx(x0, x1, y0, y1, z0, z1, mat, o = {}) {
     pos: new V3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2),
     half: new V3((x1 - x0) / 2, (y1 - y0) / 2, (z1 - z0) / 2),
     mat, ext: o.ext || 0, anchored: o.anchored != null ? o.anchored : y0 < 0.01,
-    seed: o.seed != null ? o.seed : LR(), densityScale: o.ds, toughScale: o.ts, noAuto: o.noAuto, simple: o.simple,
+    seed: o.seed != null ? o.seed : LR(), densityScale: o.ds, toughScale: o.ts, noAuto: o.noAuto, simple: o.simple, prop: o.prop,
   });
 }
 function win(x0, x1, y0, y1, z0, z1, mat, seed) { return makeWindow(x0, x1, y0, y1, z0, z1, mat, seed != null ? seed : LR()); }
@@ -5055,96 +5067,6 @@ function buildPyaterochka() {
   for (const x of [-7, 5]) bx(x - 1.1, x + 1.1, HW + RT, HW + RT + 1.3, -5.5, -4.2, MAT.METAL, { ds: 0.18, anchored: false });
 }
 
-// ---------- 6. Ларьки у остановки ----------
-function buildKiosks() {
-  LR = mulberry32(2424);
-  const KW = 3.2, D = 2.6, H = 2.6, T = 0.1, XK = -8.8, Z0 = -1.4, Z1 = Z0 + D;
-  const kinds = [
-    ['k_shawarma', pal8(0, true), pal8(2, false)],
-    ['k_flowers', pal8(7, true), pal8(3, false)],
-    ['k_keys', pal8(1, true), pal8(4, false)],
-    ['k_coffee', pal8(7, true), pal8(6, false)],
-    ['k_fruit', pal8(0, true), pal8(3, false)],
-  ];
-  kinds.forEach(([sid, wall, trim], i) => {
-    const xa = XK + i * KW, xb = xa + KW;
-    bx(xa + T, xb - T, 0, 0.15, Z0 + T, Z1 - T, MAT.CONCRETE, { anchored: true });
-    rowX(xa, xb, 0, H / 2, Z0, Z0 + T, MAT.SANDWICH, 2, { ext: 6, seed: wall });
-    rowX(xa, xb, H / 2, H, Z0, Z0 + T, MAT.SANDWICH, 2, { ext: 6, seed: wall });
-    for (const [x0, x1, e] of [[xa, xa + T, 2], [xb - T, xb, 1]]) {
-      bx(x0, x1, 0, H / 2, Z0 + T, Z1, MAT.SANDWICH, { ext: e, seed: wall });
-      bx(x0, x1, H / 2, H, Z0 + T, Z1, MAT.SANDWICH, { ext: e, seed: wall });
-    }
-    bx(xa + T, xb - T, 0, 0.95, Z1 - T, Z1, MAT.SANDWICH, { ext: 5, seed: trim });
-    win(xa + T, xb - T, 0.95, 2.25, Z1 - 0.07, Z1 - 0.03, MAT.SHOPWIN);
-    bx(xa + T, xb - T, 2.25, H, Z1 - T, Z1, MAT.SANDWICH, { ext: 5, seed: trim });
-    bx(xa + 0.3, xb - 0.3, 0.9, 0.96, Z1, Z1 + 0.3, MAT.METAL, { ds: 0.15, anchored: false });           // прилавок
-    bx(xa, xb, H, H + 0.12, Z0, Z1 + 0.35, MAT.SANDWICH, { seed: pal8(6, false), anchored: false });     // крыша
-    signBox(sid, 5, xa + 0.1, xb - 0.1, H + 0.12, H + 0.92, Z1 + 0.1, Z1 + 0.25);
-    bx(xa + T + 0.05, xb - T - 1.0, 0.15, 1.9, Z0 + T, Z0 + T + 0.45, MAT.SHELF, { anchored: false });
-    bx(xb - T - 0.8, xb - T - 0.05, 0.15, 1.85, Z0 + T, Z0 + T + 0.7, MAT.SANDWICH, { seed: pal8(0, false), anchored: false });   // холодильник
-  });
-  // остановка
-  const sx0 = 9.2, sx1 = 13.2, sz0 = -0.8, sz1 = 1.0;
-  for (const [x, z] of [[sx0, sz0], [sx1 - 0.08, sz0], [sx0, sz1 - 0.08], [sx1 - 0.08, sz1 - 0.08]]) bx(x, x + 0.08, 0, 2.4, z, z + 0.08, MAT.METAL, { ds: 0.3 });
-  bx(sx0 - 0.1, sx1 + 0.1, 2.4, 2.5, sz0 - 0.1, sz1 + 0.15, MAT.SANDWICH, { seed: pal8(4, false), anchored: false });
-  signBox('bus_ad', 5, sx0 + 0.08, sx0 + 1.68, 0.35, 1.65, sz0, sz0 + 0.12);
-  bx(sx0 + 0.84, sx0 + 0.92, 0, 0.35, sz0 + 0.02, sz0 + 0.1, MAT.METAL, { ds: 0.3 });
-  win(sx0 + 1.68, sx1 - 0.08, 0.3, 2.3, sz0 + 0.02, sz0 + 0.06, MAT.SHOPWIN);
-  win(sx1 - 0.06, sx1 - 0.02, 0.3, 2.3, sz0 + 0.08, sz1 - 0.08, MAT.SHOPWIN);
-  bx(sx0 + 1.8, sx1 - 0.3, 0.42, 0.48, sz0 + 0.15, sz0 + 0.55, MAT.METAL, { ds: 0.2, anchored: false });   // скамейка
-  for (const x of [sx0 + 1.9, sx1 - 0.45]) bx(x, x + 0.06, 0, 0.42, sz0 + 0.3, sz0 + 0.4, MAT.METAL, { ds: 0.3 });
-  bx(sx1 + 0.8, sx1 + 0.88, 0, 2.3, sz1 + 0.5, sz1 + 0.58, MAT.METAL, { ds: 0.3 });                        // столб со знаком
-  signBox('bus_sign', 5, sx1 + 0.49, sx1 + 1.19, 2.3, 3.0, sz1 + 0.5, sz1 + 0.58);
-  bx(sx0 - 0.8, sx0 - 0.4, 0, 0.7, sz1 - 0.2, sz1 + 0.2, MAT.METAL, { ds: 0.08 });                          // урна
-}
-
-// ---------- 7. Гаражный кооператив ----------
-function buildGarages() {
-  LR = mulberry32(1977);
-  const N = 8, GW = 3.4, T = 0.25, D = 6, H = 2.6, X0 = -N * GW / 2, Z0 = -3, Z1 = Z0 + D;
-  const gateCol = [0, 1, 2, 3, 4, 5, 6, 2];
-  const plaster = (i) => pal8(i % 2 ? 6 : 5, false);
-  // стены между боксами; левый торец — с граффити
-  for (let w = 0; w <= N; w++) {
-    const xc = X0 + w * GW, x0 = xc - T / 2, x1 = xc + T / 2;
-    if (w === 0) { signBox('gar_tsoi', 2, x0, x1, 0, H, Z0, Z1, 3, 2, MAT.SIGNWALL); continue; }
-    const mat = w < 4 ? MAT.BRICK : MAT.PLASTER;
-    for (let r = 0; r < 2; r++) rowZ(x0, x1, r * H / 2, (r + 1) * H / 2, Z0, Z1, mat, 3, { ext: w === N ? 1 : 0, seed: w < 4 ? undefined : plaster(w) });
-  }
-  for (let i = 0; i < N; i++) {
-    const xa = X0 + i * GW + T / 2, xb = X0 + (i + 1) * GW - T / 2, xm = (xa + xb) / 2;
-    const mat = i < 4 ? MAT.BRICK : MAT.PLASTER, seed = i < 4 ? undefined : plaster(i);
-    for (let r = 0; r < 2; r++) bx(xa, xb, r * H / 2, (r + 1) * H / 2, Z0, Z0 + T, mat, { ext: 6, seed });
-    bx(xa, xb, 2.2, H, Z1 - T, Z1, mat, { ext: 5, seed });
-    // ворота — две створки; одни продаются
-    if (i === 2) signBox('gar_sale', 5, xa, xb, 0, 2.2, Z1 - 0.2, Z1 - 0.1, 2, 1, MAT.SIGN, { ds: 1.3, ts: 3 });
-    else for (const [a, b] of [[xa, xm], [xm, xb]]) bx(a, b, 0, 2.2, Z1 - 0.2, Z1 - 0.1, MAT.GATE, { ext: 5, seed: pal8(gateCol[i], false) });
-    // плиты крыши
-    const ra = i === 0 ? X0 - T / 2 : X0 + i * GW, rb = i === N - 1 ? X0 + N * GW + T / 2 : X0 + (i + 1) * GW;
-    bx(ra, rb, H, H + 0.2, Z0, Z0 + D / 2, MAT.ROOF);
-    bx(ra, rb, H, H + 0.2, Z0 + D / 2, Z1 + 0.25, MAT.ROOF);
-    // внутри: стеллаж с банками и коробки
-    bx(xa + 0.1, xb - 0.1, 0, 1.8, Z0 + T, Z0 + T + 0.5, MAT.SHELF, { anchored: true });
-    if (LR() < 0.7) bx(xa + 0.3, xa + 1.0, 0, 0.6, Z0 + T + 0.8, Z0 + T + 1.5, MAT.BOXES, { anchored: true });
-  }
-  { const i = 5, xa = X0 + i * GW + T / 2, xb = X0 + (i + 1) * GW - T / 2;
-    signBox('gar_tire', 5, xa + 0.2, xb - 0.2, H + 0.2, H + 0.9, Z1 + 0.05, Z1 + 0.15); }
-  // трансформаторная будка
-  const tx0 = X0 + N * GW + 2.2, tx1 = tx0 + 3.0, tz0 = -1.6, tz1 = 1.6, TH = 3.2, TT = 0.3, TP = pal8(5, false);
-  for (let r = 0; r < 2; r++) bx(tx0, tx1, r * TH / 2, (r + 1) * TH / 2, tz0, tz0 + TT, MAT.PLASTER, { ext: 6, seed: TP });
-  for (const [xa, xb, e] of [[tx0, tx0 + TT, 2], [tx1 - TT, tx1, 1]]) for (let r = 0; r < 2; r++) bx(xa, xb, r * TH / 2, (r + 1) * TH / 2, tz0 + TT, tz1, MAT.PLASTER, { ext: e, seed: TP });
-  const dx0 = tx0 + 0.9, dx1 = tx1 - 0.9;
-  for (let r = 0; r < 2; r++) {
-    bx(tx0 + TT, dx0, r * 1.15, (r + 1) * 1.15, tz1 - TT, tz1, MAT.PLASTER, { ext: 5, seed: TP });
-    bx(dx1, tx1 - TT, r * 1.15, (r + 1) * 1.15, tz1 - TT, tz1, MAT.PLASTER, { ext: 5, seed: TP });
-  }
-  bx(tx0 + TT, tx1 - TT, 2.3, TH, tz1 - TT, tz1, MAT.PLASTER, { ext: 5, seed: TP });
-  bx(dx0, dx1, 0, 2.3, tz1 - 0.2, tz1 - 0.1, MAT.GATE, { ext: 5, seed: pal8(3, false) });
-  signBox('tp_danger', 5, (dx0 + dx1) / 2 - 0.4, (dx0 + dx1) / 2 + 0.4, 1.3, 1.85, tz1 - 0.1, tz1 - 0.06);
-  bx(tx0 - 0.2, tx1 + 0.2, TH, TH + 0.2, tz0 - 0.2, tz1 + 0.3, MAT.ROOF);
-}
-
 // ---------- 8. Торговый центр «Горизонт» ----------
 function buildMall() {
   LR = mulberry32(2008);
@@ -5371,82 +5293,340 @@ function buildOzon() {
   win(cx0 - 0.04, cx0 - 0.01, 2.3, 3.4, tz0 + 0.2, tz1 - 0.2, MAT.SHOPWIN);
 }
 
+// ---------- 10. «Вкусно — и точка»: ресторан с автокассой, башней и стелой ----------
+function buildVkusno() {
+  LR = mulberry32(2022);
+  const X0 = -11, X1 = 11, Z0 = -7, Z1 = 7, T = 0.25, H = 4.6, RT = 0.25, YR = H + RT, TT = 7.7;
+  const GRA = pal8(7, false), GRN = pal8(3, true), DG = pal8(6, false);
+  const wall = (o) => Object.assign({ seed: GRA }, o);
+  // пол
+  { const w = (X1 - X0 - 2 * T) / 5, d = (Z1 - Z0 - 2 * T) / 3;
+    for (let i = 0; i < 5; i++) for (let k = 0; k < 3; k++) bx(X0 + T + i * w, X0 + T + (i + 1) * w, 0, 0.2, Z0 + T + k * d, Z0 + T + (k + 1) * d, MAT.CONCRETE, { anchored: true }); }
+  // колонны зала
+  for (const x of [-4.4, 4.4]) for (const z of [-2.33, 2.33]) for (const [ya, yb] of [[0.2, 2.4], [2.4, H]]) bx(x - 0.2, x + 0.2, ya, yb, z - 0.2, z + 0.2, MAT.CONCRETE);
+  // фасад: слева низ башни, дальше пилоны и витрины, вход посередине
+  const zf0 = Z1 - T, zf1 = Z1, zW = [Z1 - 0.15, Z1 - 0.09];
+  for (const [ya, yb] of [[0, 2.3], [2.3, H]]) bx(X0, -7, ya, yb, zf0, zf1, MAT.PLASTER, wall({ ext: 5 }));
+  for (const [a, b] of [[-7, -6.5], [-1.25, -0.75], [4.5, 5.0], [10.5, X1]]) for (const [ya, yb] of [[0, 1.6], [1.6, 3.2]]) bx(a, b, ya, yb, zf0, zf1, MAT.PLASTER, wall({ ext: 5 }));
+  for (const [a, b] of [[-6.5, -1.25], [5.0, 10.5]]) { bx(a, b, 0, 0.3, zf0, zf1, MAT.PLASTER, wall({ ext: 5 })); win(a, b, 0.3, 3.2, zW[0], zW[1], MAT.SHOPWIN); }
+  bx(-0.75, 4.5, 0, 0.05, zf0, zf1, MAT.CONCRETE, { anchored: true });
+  win(-0.75, 4.5, 0.05, 3.2, zW[0], zW[1], MAT.SHOPWIN, 0.37);
+  rowX(-7, X1, 3.2, H, zf0, zf1, MAT.PLASTER, 5, wall({ ext: 5 }));
+  signBox('vt_word', 5, -5.5, 4.5, 3.25, 4.55, Z1, Z1 + 0.15, 4, 1);
+  // стены по бокам и сзади: сплошные участки и проёмы
+  const sideWall = (xa, xb, e, segs) => {
+    for (const [a, b, kind] of segs) {
+      if (kind === 'wall') for (const [ya, yb] of [[0, 2.3], [2.3, H]]) bx(xa, xb, ya, yb, a, b, MAT.PLASTER, wall({ ext: e }));
+      else {
+        const top = kind === 'drive' ? 2.1 : 2.5;
+        bx(xa, xb, 0, 0.9, a, b, MAT.PLASTER, wall({ ext: e }));
+        const xw = e === 2 ? [xa + 0.09, xa + 0.15] : [xb - 0.15, xb - 0.09];
+        win(xw[0], xw[1], 0.9, top, a, b, MAT.SHOPWIN);
+        bx(xa, xb, top, H, a, b, MAT.PLASTER, wall({ ext: e }));
+      }
+    }
+  };
+  sideWall(X0, X0 + T, 2, [[Z0 + T, -4.5, 'wall'], [-4.5, -2.5, 'win'], [-2.5, -0.8, 'wall'], [-0.8, 1.2, 'win'], [1.2, Z1 - T, 'wall']]);
+  sideWall(X1 - T, X1, 1, [[Z0 + T, -1.3, 'wall'], [-1.3, 0.3, 'drive'], [0.3, Z1 - T, 'wall']]);
+  for (const [a, b, door] of [[X0, -3.6, false], [-3.6, 3, false], [3, 4.2, true], [4.2, X1, false]]) {
+    if (door) { win(a, b, 0.05, 2.3, Z0 + 0.09, Z0 + 0.15, MAT.DOOR, 0.3); bx(a, b, 2.3, H, Z0, Z0 + T, MAT.PLASTER, wall({ ext: 6 })); }
+    else for (const [ya, yb] of [[0, 2.3], [2.3, H]]) bx(a, b, ya, yb, Z0, Z0 + T, MAT.PLASTER, wall({ ext: 6 }));
+  }
+  // окно автокассы с козырьком и вывески сбоку
+  signBox('vt_window', 1, X1, X1 + 0.1, 2.2, 2.65, -1.3, 0.3);
+  bx(X1, X1 + 1.1, 2.75, 2.87, -1.7, 0.7, MAT.METAL, { ds: 0.25 });
+  signBox('vt_drive', 1, X1, X1 + 0.1, 3.4, 4.1, 3.5, 5.5);
+  // кровля, башня с логотипом, парапет
+  for (let i = 0; i < 5; i++) for (let k = 0; k < 3; k++) bx(X0 + i * 4.4, X0 + (i + 1) * 4.4, H, YR, Z0 + k * 14 / 3, Z0 + (k + 1) * 14 / 3, MAT.ROOF);
+  bx(X0, -7, YR, TT, Z1 - T, Z1, MAT.PLASTER, wall({ ext: 5 }));
+  bx(X0, -7, YR, TT, 3, 3 + T, MAT.PLASTER, wall({ ext: 6 }));
+  bx(X0, X0 + T, YR, TT, 3 + T, Z1 - T, MAT.PLASTER, wall({ ext: 2 }));
+  bx(-7 - T, -7, YR, TT, 3 + T, Z1 - T, MAT.PLASTER, wall({ ext: 1 }));
+  bx(X0, -7, TT, TT + 0.2, 3, Z1, MAT.ROOF);
+  signBox('vt_logo', 5, -10.4, -7.6, 4.87, 7.67, Z1, Z1 + 0.12);
+  signBox('vt_logo', 2, X0 - 0.12, X0, 4.87, 7.67, 3.6, 6.4);
+  rowX(-7, X1, YR, YR + 0.55, Z1 - T, Z1, MAT.PLASTER, 4, wall({ ext: 5 }));
+  rowX(X0, X1, YR, YR + 0.55, Z0, Z0 + T, MAT.PLASTER, 5, wall({ ext: 6 }));
+  rowZ(X0, X0 + T, YR, YR + 0.55, Z0 + T, 3, MAT.PLASTER, 2, wall({ ext: 2 }));
+  rowZ(X1 - T, X1, YR, YR + 0.55, Z0 + T, Z1 - T, MAT.PLASTER, 3, wall({ ext: 1 }));
+  for (const x of [-2, 6]) bx(x - 1, x + 1, YR, YR + 1.2, -4.5, -3.2, MAT.METAL, { ds: 0.18, anchored: false });
+  // зал: касса, меню над ней, кухня, столики
+  rowX(-6, 2, 0.2, 1.25, -4.6, -3.9, MAT.SANDWICH, 2, { seed: DG, anchored: false });
+  signBox('vt_menu', 5, -4, -0.8, 2.3, 4.1, Z0 + T, Z0 + T + 0.06);
+  for (const x of [-5.5, -3.2, -0.9]) bx(x, x + 1.4, 0.2, 1.1, -6.6, -5.7, MAT.METAL, { ds: 0.2, anchored: false });
+  for (const [x, z] of [[-6.5, 0.2], [-6.5, 4.6], [-1.8, 0.2], [-1.8, 4.6], [2.2, 4.6], [7.0, 0.2]]) bx(x - 0.45, x + 0.45, 0.2, 0.95, z - 0.45, z + 0.45, MAT.FURNITURE, { anchored: false, seed: 0.72 / 7.77 });
+  // летняя веранда: столики под зонтами
+  for (const [x, z] of [[6.5, 9.2], [9.3, 9.2], [7.9, 10.9]]) {
+    bx(x - 0.45, x + 0.45, 0, 0.75, z - 0.45, z + 0.45, MAT.FURNITURE, { seed: 0.1 / 7.77 });
+    bx(x - 0.05, x + 0.05, 0.75, 2.3, z - 0.05, z + 0.05, MAT.METAL, { ds: 0.3 });
+    bx(x - 1.0, x + 1.0, 2.3, 2.38, z - 1.0, z + 1.0, MAT.SANDWICH, { seed: GRN });
+  }
+  // автокасса: меню-табло, колонка связи, ограничитель высоты на въезде
+  for (const z of [-4.35, -1.75]) bx(16.51, 16.61, 0, 0.9, z, z + 0.1, MAT.METAL, { ds: 0.3 });
+  signBox('vt_menu', 2, 16.5, 16.62, 0.9, 2.7, -4.6, -1.4);
+  bx(16.3, 16.6, 0, 1.3, -6.4, -6.1, MAT.METAL, { ds: 0.3 });
+  for (const x of [12.2, 16.8]) bx(x, x + 0.2, 0, 3.0, -9.1, -8.9, MAT.METAL, { ds: 0.3 });
+  bx(12.2, 17.0, 3.0, 3.2, -9.1, -8.9, MAT.METAL, { ds: 0.3 });
+  signBox('vt_limit', 5, 12.8, 16.4, 2.5, 3.0, -9.0, -8.94);
+  // стела с логотипом у дороги — падает, как труба
+  bx(-15.7, -14.3, 0, 0.6, 9.0, 10.0, MAT.CONCRETE);
+  for (let i = 0; i < 5; i++) bx(-15.4, -14.6, 0.6 + i * 1.52, 0.6 + (i + 1) * 1.52, 9.25, 9.75, MAT.SANDWICH, { seed: GRN });
+  signBox('vt_logo', 5, -16.4, -13.6, 8.2, 11.0, 9.25, 9.75);
+}
+
 const LEVELS = [
   {
     id: 'khrush', name: 'Хрущёвка', build: buildKhrushchevka,
     desc: 'Пятиэтажка 1962 года. Строили на 25 лет, простояла 60 — хватит. Выбей первый этаж, дальше она сама.',
-    shout: ['ПРОЩАЙ, ХРУЩЁВКА!', 'ПЯТЬ ЭТАЖЕЙ ВНИЗ!'],
     crane: { x: -14, z: 27, heading: 2.6632, slew: 0.0, boom: 57, rope: 8 }, goal: 0.85, par: 360,
     look: new V3(0, 7, 0), icon: 'khrush', tod: 'golden',
   },
   {
     id: 'boiler', name: 'Котельная', build: buildBoiler,
     desc: 'Котельная и 26-метровая труба. Полвека грела район — теперь погреет душу. Подруби трубу сбоку, и она ляжет, как дерево.',
-    shout: ['КОТЕЛЬНАЯ ОСТЫЛА!', 'ОТОПИТЕЛЬНЫЙ СЕЗОН ЗАКРЫТ!'],
     crane: { x: 0, z: 25, heading: Math.PI, slew: -0.35, boom: 62, rope: 8 }, goal: 0.8, par: 260,
-    look: new V3(-2, 8, -1), icon: 'boiler', tod: 'morning',
+    look: new V3(-2, 8, -1), icon: 'boiler', tod: 'sunset',
   },
   {
     id: 'frame', name: 'Недострой', build: buildFrame,
     desc: 'Каркас из девяностых. Застройщик обещал вернуться после кризиса, но не уточнил, какого. Выбей колонны — перекрытия поедут вниз.',
-    shout: ['ДОСТРОИЛИ… НАОБОРОТ!', 'СДАЧА ОБЪЕКТА!'],
     crane: { x: -12, z: 26, heading: 2.7092, slew: 0, boom: 60, rope: 8 }, goal: 0.85, par: 210,
     look: new V3(0, 10, 0), icon: 'frame', tod: 'sunset',
   },
   {
     id: 'nine', name: 'Девятиэтажка', build: buildNineStory,
     desc: 'Девять этажей панелей и лифт, который не работал с 2009-го. Выбей низ — дом сложится под своим весом.',
-    shout: ['ЛИФТ ПРИЕХАЛ!', 'ДЕВЯТЬ ЭТАЖЕЙ ВНИЗ!'],
     crane: { x: -15, z: 29, heading: 2.64, slew: 0, boom: 62, rope: 9 }, goal: 0.85, par: 420,
-    look: new V3(0, 12, 0), icon: 'nine', tod: 'day',
+    look: new V3(0, 12, 0), icon: 'nine', tod: 'golden',
   },
   {
-    id: 'pyat', name: 'Пятёрочка', build: buildPyaterochka, isNew: true,
+    id: 'pyat', name: 'Пятёрочка', build: buildPyaterochka,
     desc: 'Магазин у дома. Сегодня акция: минус 100% на всё здание, карта не нужна. Выбей колонны — кровля ляжет сама.',
-    shout: ['СВОБОДНАЯ КАССА!', 'АКЦИЯ ЗАКОНЧИЛАСЬ!', 'ВСЁ ПО СКИДКЕ!'],
     crane: { x: -14, z: 32, heading: 2.66, slew: 0, boom: 55, rope: 18 }, goal: 0.85, par: 150,
     look: new V3(0, 3.5, 0), icon: 'pyat', tod: 'sunset', menuR: 44,
   },
   {
-    id: 'kiosk', name: 'Ларьки', build: buildKiosks, isNew: true,
-    desc: 'Шаурма, цветы, ключи и кофе с собой. Работали круглосуточно — отдохнут вечно. Разминка на пару ударов.',
-    shout: ['ЗАКРЫТО НА ПЕРЕУЧЁТ!', 'ШАУРМЫ БОЛЬШЕ НЕТ!', 'ПЕРЕРЫВ 15 МИНУТ!'],
-    crane: { x: -9, z: 23, heading: 2.66, slew: 0, boom: 55, rope: 20 }, goal: 0.85, par: 75,
-    look: new V3(2, 1.5, 0), icon: 'kiosk', tod: 'morning', menuR: 30,
-  },
-  {
-    id: 'garage', name: 'Гаражи', build: buildGarages, isNew: true,
-    desc: 'ГСК «Мотор»: три «Жигули», сорок банок огурцов и чья-то мужская берлога. Один гараж, говорят, продаётся.',
-    shout: ['ГАРАЖ ПРОДАН!', 'ОГУРЦЫ НЕ ПОСТРАДАЛИ!', 'ПОКА, «МОТОР»!'],
-    crane: { x: -11, z: 25, heading: 2.66, slew: 0, boom: 55, rope: 20 }, goal: 0.85, par: 120,
-    look: new V3(1, 1.5, 0), icon: 'garage', tod: 'golden', menuR: 36,
-  },
-  {
-    id: 'mall', name: 'ТЦ «Горизонт»', build: buildMall, isNew: true,
+    id: 'mall', name: 'ТЦ «Горизонт»', build: buildMall,
     desc: 'Два этажа, сорок вывесок и ни одного архитектора. Пункт выдачи, ломбард, «Красное&Белое». Сноси, пока не открыли ещё одну аптеку.',
-    shout: ['ТЦ ЗАКРЫЛСЯ!', 'АРЕНДАТОРЫ СЪЕХАЛИ!', 'ВСЁ ПО 99!'],
     crane: { x: -14, z: 30, heading: 2.66, slew: 0, boom: 57, rope: 12 }, goal: 0.85, par: 300,
     look: new V3(0, 5, 0), icon: 'mall', tod: 'sunset', menuR: 52,
   },
   {
-    id: 'post', name: 'Почта России', build: buildPost, isNew: true,
+    id: 'post', name: 'Почта России', build: buildPost,
     desc: 'Отделение почтовой связи. Посылку на снос ждали 2–6 недель, трек-номер не отслеживается. Обед с 12 до 15 — успей до обеда.',
-    shout: ['ПОСЫЛКА ДОСТАВЛЕНА!', 'ВРУЧЕНО АДРЕСАТУ!', 'УШЛИ НА ОБЕД!'],
     crane: { x: -13, z: 28, heading: 2.66, slew: 0, boom: 55, rope: 19 }, goal: 0.85, par: 150,
-    look: new V3(0, 2.5, 0), icon: 'post', tod: 'day', menuR: 40,
+    look: new V3(0, 2.5, 0), icon: 'post', tod: 'golden', menuR: 40,
   },
   {
-    id: 'ozon', name: 'Склад OZON', build: buildOzon, isNew: true,
+    id: 'ozon', name: 'Склад OZON', build: buildOzon,
     desc: 'Склад на 30 000 посылок, и все со статусом «Приедет завтра». Сноси аккуратно — где-то там лежит твой заказ.',
     shout: ['ЗАКАЗ ОТМЕНЁН!', 'ВОЗВРАТ ОФОРМЛЕН!', 'ПОСЫЛКИ ЛЕТЯТ!'],
     crane: { x: -14, z: 31, heading: 2.66, slew: 0, boom: 57, rope: 13 }, goal: 0.85, par: 300,
-    look: new V3(-2, 4.5, 0), icon: 'ozon', tod: 'day', menuR: 54,
+    look: new V3(-2, 4.5, 0), icon: 'ozon', tod: 'golden', menuR: 54,
+  },
+  {
+    id: 'vkusno', name: 'Вкусно — и точка', build: buildVkusno, isNew: true,
+    desc: 'Бывший «Макдоналдс»: всё то же, только название длиннее. Есть автокасса и стела с логотипом у дороги — роняй её, как трубу.',
+    crane: { x: -14, z: 31, heading: 2.66, slew: 0, boom: 57, rope: 17 }, goal: 0.85, par: 180,
+    look: new V3(-1, 3, 0), icon: 'vkusno', tod: 'sunset', menuR: 46,
   },
 ];
 
 
 let todSetting = store.get('tod', 'auto');
+if (!['auto', 'golden', 'sunset'].includes(todSetting)) todSetting = 'auto';
 const todFor = (L) => (todSetting !== 'auto' && TOD[todSetting]) ? todSetting : (L.tod || 'golden');
+
+// =====================================================================
+//  Жизнь стройплощадки: бытовки, биотуалеты, материалы, машины.
+//  Всё рушится, но в процент сноса не идёт — это «попутно».
+// =====================================================================
+const site = { props: [], destroyed: [], checkT: 0, bb: null };
+let _propId = 0;
+function propBegin(kind, name, x0, x1, z0, z1) {
+  const pr = { id: ++_propId, kind, name, start: pieces.length, pieces: [], mass: 0, done: false, box: [x0, x1, z0, z1] };
+  return pr;
+}
+function propEnd(pr) {
+  pr.pieces = pieces.slice(pr.start);
+  for (const p of pr.pieces) p.prop = pr.id;
+  pr.mass = pr.pieces.reduce((s, p) => s + p.mass, 0);
+  pr.cx = (pr.box[0] + pr.box[1]) / 2; pr.cz = (pr.box[2] + pr.box[3]) / 2;
+  site.props.push(pr);
+}
+// можно ли ставить сюда: не на здание, не под кран и не на его путь от ворот
+function siteFree(x0, x1, z0, z1, L) {
+  const bb = site.bb, m = 2.5;
+  if (x1 > bb.x0 - m && x0 < bb.x1 + m && z1 > bb.z0 - m && z0 < bb.z1 + m) return false;
+  const cx = L.crane.x, cz = L.crane.z;
+  const dx = Math.max(x0 - cx, 0, cx - x1), dz = Math.max(z0 - cz, 0, cz - z1);
+  if (Math.hypot(dx, dz) < 9) return false;
+  // путь крана: отрезок от ворот (0, 66) до его места
+  const px = (x0 + x1) / 2, pz = (z0 + z1) / 2, r = Math.hypot(x1 - x0, z1 - z0) / 2;
+  const ax = 0, az = 66, vx = cx - ax, vz = cz - az, t = clamp(((px - ax) * vx + (pz - az) * vz) / (vx * vx + vz * vz), 0, 1);
+  if (Math.hypot(px - ax - vx * t, pz - az - vz * t) < r + 4) return false;
+  return true;
+}
+
+// ---------- бытовка 6 × 2.45 м: окно, дверь, окно ----------
+function siteCabin(x0, z0, y0, col) {
+  const Lc = 6.0, Wc = 2.45, Hc = 2.6, T = 0.08, x1 = x0 + Lc, z1 = z0 + Wc, yb = y0 + 0.15, yt = y0 + Hc - 0.12;
+  bx(x0, x1, y0, yb, z0, z1, MAT.METAL, { ds: 0.15 });
+  rowX(x0, x1, yb, yt, z0, z0 + T, MAT.SANDWICH, 2, { ext: 6, seed: col });
+  for (const [a, b, e] of [[x0, x0 + T, 2], [x1 - T, x1, 1]]) bx(a, b, yb, yt, z0 + T, z1 - T, MAT.SANDWICH, { ext: e, seed: col });
+  const zf0 = z1 - T, zf1 = z1;
+  for (const [a, b, k] of [[x0 + T, x0 + 0.9, 'w'], [x0 + 0.9, x0 + 2.2, 'win'], [x0 + 2.2, x0 + 3.1, 'w'], [x0 + 3.1, x0 + 4.0, 'door'], [x0 + 4.0, x0 + 4.6, 'w'], [x0 + 4.6, x1 - 0.6, 'win'], [x1 - 0.6, x1 - T, 'w']]) {
+    if (k === 'w') bx(a, b, yb, yt, zf0, zf1, MAT.SANDWICH, { ext: 5, seed: col });
+    else if (k === 'win') {
+      bx(a, b, yb, yb + 0.95, zf0, zf1, MAT.SANDWICH, { ext: 5, seed: col });
+      win(a, b, yb + 0.95, yb + 1.95, zf0 + 0.02, zf1 - 0.02, MAT.WINDOW);
+      bx(a, b, yb + 1.95, yt, zf0, zf1, MAT.SANDWICH, { ext: 5, seed: col });
+    } else {
+      win(a, b, yb, yb + 2.0, zf0 + 0.02, zf1 - 0.02, MAT.DOOR, 0.62);
+      bx(a, b, yb + 2.0, yt, zf0, zf1, MAT.SANDWICH, { ext: 5, seed: col });
+    }
+  }
+  bx(x0, x1, yt, yt + 0.12, z0, z1, MAT.METAL, { ds: 0.12 });
+}
+// ---------- легковушка вдоль X, капот к +x ----------
+function siteSedan(x0, z0, colIdx) {
+  const Lc = 4.1, Wc = 1.62, x1 = x0 + Lc, z1 = z0 + Wc, bz0 = z0 + 0.1, bz1 = z1 - 0.1, seed = pal8(colIdx, false);
+  for (const x of [x0 + 0.72, x1 - 0.78]) for (const [a, b] of [[z0 - 0.1, z0 + 0.1], [z1 - 0.1, z1 + 0.1]]) bx(x - 0.31, x + 0.31, 0, 0.62, a, b, MAT.METAL, { ds: 0.25 });
+  bx(x0, x0 + Lc / 2, 0.3, 0.95, bz0, bz1, MAT.CAR, { seed });
+  bx(x0 + Lc / 2, x1, 0.3, 0.95, bz0, bz1, MAT.CAR, { seed });
+  const cx0 = x0 + 1.05, cx1 = x0 + 3.0;
+  bx(cx0, cx1, 0.95, 1.45, bz0 + 0.08, bz1 - 0.08, MAT.CAR, { seed });
+  win(cx1, cx1 + 0.04, 1.0, 1.4, bz0 + 0.14, bz1 - 0.14, MAT.CARGLASS);
+  win(cx0 - 0.04, cx0, 1.0, 1.4, bz0 + 0.14, bz1 - 0.14, MAT.CARGLASS);
+  for (const [a, b] of [[bz0 + 0.04, bz0 + 0.08], [bz1 - 0.08, bz1 - 0.04]]) win(cx0 + 0.1, cx1 - 0.1, 1.0, 1.4, a, b, MAT.CARGLASS);
+  for (const [a, b] of [[x1, x1 + 0.08], [x0 - 0.08, x0]]) bx(a, b, 0.35, 0.55, bz0, bz1, MAT.METAL, { ds: 0.2 });
+}
+// ---------- «Газель» с будкой, кабина к +x ----------
+function siteGazel(x0, z0) {
+  const Lc = 5.6, Wc = 2.1, x1 = x0 + Lc, z1 = z0 + Wc;
+  for (const x of [x0 + 1.2, x1 - 0.85]) for (const [a, b] of [[z0 - 0.08, z0 + 0.14], [z1 - 0.14, z1 + 0.08]]) bx(x - 0.34, x + 0.34, 0, 0.68, a, b, MAT.METAL, { ds: 0.25 });
+  bx(x0, x1, 0.45, 0.75, z0 + 0.14, z1 - 0.14, MAT.METAL, { ds: 0.2 });
+  signBox('site_gazel', 5, x0, x0 + 4.0, 0.75, 2.45, z0, z1, 2, 1, MAT.SIGN, { ds: 0.3 });
+  const cx0 = x0 + 4.05;
+  bx(cx0, x1, 0.75, 2.3, z0 + 0.1, z1 - 0.1, MAT.CAR, { seed: pal8(0, false) });
+  win(x1, x1 + 0.04, 1.45, 2.15, z0 + 0.25, z1 - 0.25, MAT.CARGLASS);
+  for (const [a, b] of [[z0 + 0.06, z0 + 0.1], [z1 - 0.1, z1 - 0.06]]) win(cx0 + 0.15, x1 - 0.15, 1.45, 2.1, a, b, MAT.CARGLASS);
+}
+// ---------- самосвал, кабина к +x ----------
+function siteDumpTruck(x0, z0) {
+  const Lc = 7.2, Wc = 2.5, x1 = x0 + Lc, z1 = z0 + Wc;
+  for (const x of [x0 + 1.1, x0 + 2.3, x1 - 1.2]) for (const [a, b] of [[z0 - 0.05, z0 + 0.3], [z1 - 0.3, z1 + 0.05]]) bx(x - 0.5, x + 0.5, 0, 1.0, a, b, MAT.METAL, { ds: 0.3 });
+  bx(x0, x1, 0.9, 1.25, z0 + 0.3, z1 - 0.3, MAT.METAL, { ds: 0.3 });
+  const kx1 = x0 + 4.6;
+  bx(x0, kx1, 1.25, 1.45, z0, z1, MAT.METAL, { ds: 0.25 });
+  for (const [a, b] of [[z0, z0 + 0.12], [z1 - 0.12, z1]]) bx(x0, kx1, 1.45, 2.6, a, b, MAT.METAL, { ds: 0.25 });
+  bx(x0, x0 + 0.12, 1.45, 2.6, z0 + 0.12, z1 - 0.12, MAT.METAL, { ds: 0.25 });
+  bx(kx1 - 0.12, kx1, 1.45, 2.9, z0 + 0.12, z1 - 0.12, MAT.METAL, { ds: 0.25 });
+  bx(x0 + 0.3, kx1 - 0.3, 1.45, 2.1, z0 + 0.3, z1 - 0.3, MAT.CONCRETE, { ds: 0.5 });   // кузов с грунтом
+  bx(x1 - 2.3, x1, 1.25, 3.3, z0 + 0.1, z1 - 0.1, MAT.CAR, { seed: pal8(7, false) });
+  win(x1, x1 + 0.04, 2.2, 3.1, z0 + 0.3, z1 - 0.3, MAT.CARGLASS);
+  for (const [a, b] of [[z0 + 0.06, z0 + 0.1], [z1 - 0.1, z1 - 0.06]]) win(x1 - 2.1, x1 - 0.3, 2.2, 3.05, a, b, MAT.CARGLASS);
+}
+
+// Площадка собирается после здания; всё, что мешает зданию или крану, пропускается
+function buildSite(L) {
+  site.props = []; site.destroyed = []; site.checkT = 0;
+  let bb = { x0: 1e9, x1: -1e9, z0: 1e9, z1: -1e9 };
+  for (const p of pieces) { bb.x0 = Math.min(bb.x0, p.aabbMin.x); bb.x1 = Math.max(bb.x1, p.aabbMax.x); bb.z0 = Math.min(bb.z0, p.aabbMin.z); bb.z1 = Math.max(bb.z1, p.aabbMax.z); }
+  site.bb = bb;
+  const add = (kind, name, box, fn) => {
+    if (!siteFree(box[0], box[1], box[2], box[3], L)) return;
+    const pr = propBegin(kind, name, ...box); fn(); propEnd(pr);
+  };
+  const BLUE = pal8(4, true), WHITE = pal8(0, true);
+  // блок бытовок в два этажа с лестницей и галереей; прорабская — наверху справа
+  const CX = -36.5, CZ = 17;
+  add('cabin', 'бытовка', [CX, CX + 6, CZ, CZ + 2.45], () => siteCabin(CX, CZ, 0, BLUE));
+  add('cabin', 'бытовка', [CX + 6, CX + 12, CZ, CZ + 2.45], () => siteCabin(CX + 6, CZ, 0, WHITE));
+  add('cabin', 'бытовка', [CX, CX + 6, CZ, CZ + 2.45], () => siteCabin(CX, CZ, 2.6, WHITE));
+  add('prorab', 'прорабская', [CX + 6, CX + 12, CZ, CZ + 2.45], () => {
+    siteCabin(CX + 6, CZ, 2.6, BLUE);
+    signBox('site_prorab', 5, CX + 8.3, CX + 9.1, 4.2, 4.5, CZ + 2.45, CZ + 2.48);
+    bx(CX + 7.0, CX + 8.2, 2.75, 3.5, CZ + 0.3, CZ + 1.0, MAT.FURNITURE, { anchored: false, seed: 0.1 / 7.77 });   // стол
+    bx(CX + 7.3, CX + 7.5, 3.5, 3.72, CZ + 0.5, CZ + 0.7, MAT.METAL, { anchored: false, ds: 0.2 });                // чайник
+  });
+  add('stairs', 'лестница', [CX + 12, CX + 13, CZ, CZ + 6], () => {
+    bx(CX, CX + 12, 2.48, 2.6, CZ + 2.45, CZ + 3.35, MAT.METAL, { ds: 0.1 });                                        // галерея второго этажа
+    for (const x of [CX + 0.2, CX + 6, CX + 11.8]) bx(x - 0.05, x + 0.05, 0, 2.48, CZ + 3.2, CZ + 3.3, MAT.METAL, { ds: 0.3 });
+    for (let i = 0; i < 9; i++) bx(CX + 11.1, CX + 12.0, 0, (i + 1) * 0.29, CZ + 3.35 + (8 - i) * 0.3, CZ + 3.35 + (9 - i) * 0.3, MAT.METAL, { ds: 0.1 });
+  });
+  add('toilet', 'биотуалет', [-23.5, -21.9, 17.2, 18.8], () => {
+    bx(-23.3, -22.1, 0, 2.1, 17.4, 18.6, MAT.SANDWICH, { seed: BLUE, ds: 0.25 });
+    bx(-23.35, -22.05, 2.1, 2.22, 17.35, 18.65, MAT.SANDWICH, { seed: pal8(0, false), ds: 0.25 });
+    signBox('site_wc', 5, -23.15, -22.25, 0.1, 2.0, 18.6, 18.64);
+  });
+  add('toilet', 'биотуалет', [-21.9, -20.3, 17.2, 18.8], () => {
+    bx(-21.7, -20.5, 0, 2.1, 17.4, 18.6, MAT.SANDWICH, { seed: BLUE, ds: 0.25 });
+    bx(-21.75, -20.45, 2.1, 2.22, 17.35, 18.65, MAT.SANDWICH, { seed: pal8(0, false), ds: 0.25 });
+    signBox('site_wc', 5, -21.55, -20.65, 0.1, 2.0, 18.6, 18.64);
+  });
+  add('panel', 'щиток', [-39, -37.6, 17.8, 18.4], () => {
+    bx(-38.35, -38.25, 0, 1.0, 17.95, 18.05, MAT.METAL, { ds: 0.3 });
+    bx(-38.7, -37.9, 1.0, 1.9, 17.85, 18.15, MAT.METAL, { ds: 0.2 });
+    signBox('tp_danger', 5, -38.7, -37.9, 1.2, 1.75, 18.15, 18.18);
+  });
+  add('passport', 'паспорт объекта', [-42.2, -38.8, 21.8, 22.4], () => {
+    for (const x of [-41.9, -39.1]) bx(x - 0.04, x + 0.04, 0, 1.0, 22.02, 22.1, MAT.METAL, { ds: 0.3 });
+    signBox('site_passport', 5, -42, -39, 1.0, 3.0, 22.0, 22.12);
+  });
+  // материалы у здания: поддоны кирпича и блоки ФБС
+  for (const [x, z] of [[21, 1], [22.3, 1], [21, 2.3], [22.3, 2.3]]) add('bricks', 'поддон кирпича', [x, x + 1, z, z + 1], () => {
+    bx(x, x + 1, 0, 0.14, z, z + 1, MAT.FURNITURE, { seed: 0.1 / 7.77 });
+    bx(x + 0.02, x + 0.98, 0.14, 0.98, z + 0.02, z + 0.98, MAT.BRICK, { anchored: false });
+  });
+  add('fbs', 'блоки ФБС', [21, 26.4, 5.5, 6.7], () => {
+    for (let i = 0; i < 2; i++) bx(21 + i * 2.5, 21 + i * 2.5 + 2.4, 0, 0.6, 5.5, 6.1, MAT.CONCRETE, {});
+    bx(22.2, 24.6, 0.6, 1.2, 5.5, 6.1, MAT.CONCRETE, { anchored: false });
+  });
+  // машины: «Жигули», «Газель», самосвал
+  add('car', '«Жигули»', [6.9, 11.2, 22.4, 24.2], () => siteSedan(7, 22.5, 1));
+  add('car', '«Газель»', [13.9, 19.7, 21.7, 24.1], () => siteGazel(14, 21.8));
+  add('car', 'самосвал', [22.9, 30.3, 16.4, 19.1], () => siteDumpTruck(23, 16.5));
+}
+
+// Раз в четверть секунды: что из площадки уже разнесли
+function updateSite(dt) {
+  site.checkT -= dt;
+  if (site.checkT > 0 || !site.props.length) return;
+  site.checkT = 0.25;
+  for (const pr of site.props) {
+    if (pr.done) continue;
+    let moved = 0, hurt = false;
+    for (const p of pr.pieces) {
+      if (p.state !== PS.ATTACHED) moved += p.mass;
+      else if (p.damage > p.tough * 0.35) hurt = true;
+    }
+    const gone = pr.kind === 'car' ? (moved > 0 || hurt) : moved > pr.mass * 0.3;
+    if (!gone) continue;
+    pr.done = true;
+    if (pr.kind !== 'stairs') site.destroyed.push(pr);
+    if (pr.kind === 'car') audio.alarm(_v4.set(pr.cx, 1, pr.cz), 11);
+    if (typeof workers !== 'undefined') workers.propLost(pr);
+  }
+}
+// «Попутно снесено: 2 бытовки, «Газель» и биотуалет»
+const PROP_FORMS = {
+  'бытовка': ['бытовка', 'бытовки', 'бытовок'], 'биотуалет': ['биотуалет', 'биотуалета', 'биотуалетов'],
+  'поддон кирпича': ['поддон кирпича', 'поддона кирпича', 'поддонов кирпича'],
+};
+function plural(n, f) { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? f[0] : a >= 2 && a <= 4 && (b < 12 || b > 14) ? f[1] : f[2]; }
+function siteSummary() {
+  if (!site.destroyed.length) return '';
+  const cnt = new Map();
+  for (const pr of site.destroyed) cnt.set(pr.name, (cnt.get(pr.name) || 0) + 1);
+  const parts = [];
+  for (const [name, n] of cnt) {
+    const f = PROP_FORMS[name];
+    parts.push(n > 1 ? `${n} ${f ? plural(n, f) : name}` : name);
+  }
+  const list = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' и ' + parts[parts.length - 1] : parts[0];
+  return 'Попутно снесено: ' + list;
+}
 // =====================================================================
 //  Гусеничный кран с решётчатой стрелой и шар-баба на тросе
 // =====================================================================
@@ -6841,6 +7021,279 @@ const rebar = (() => {
     clear() { rods.length = 0; mesh.count = 0; },
   };
 })();
+
+// =====================================================================
+//  Искры от металла и рабочие в касках
+// =====================================================================
+
+// ---------- Искры: вытянутые вдоль скорости светящиеся штрихи ----------
+const sparks = (() => {
+  const MAX = 700;
+  const geo = new THREE.InstancedBufferGeometry();
+  const base = new THREE.PlaneGeometry(1, 1);
+  geo.index = base.index; geo.setAttribute('position', base.attributes.position);
+  const aP = new THREE.InstancedBufferAttribute(new Float32Array(MAX * 3), 3);
+  const aV = new THREE.InstancedBufferAttribute(new Float32Array(MAX * 3), 3);
+  const aK = new THREE.InstancedBufferAttribute(new Float32Array(MAX), 1);
+  for (const a of [aP, aV, aK]) a.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('aP', aP); geo.setAttribute('aV', aV); geo.setAttribute('aK', aK);
+  geo.instanceCount = 0;
+  const mat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */`
+      attribute vec3 aP; attribute vec3 aV; attribute float aK; varying float vK; varying vec2 vUv;
+      void main(){
+        float sp = length(aV) + 1e-4; vec3 ax = aV / sp;
+        vec3 toCam = normalize(cameraPosition - aP);
+        vec3 side = cross(ax, toCam); float sl = length(side);
+        side = sl > 1e-4 ? side / sl : vec3(1.0, 0.0, 0.0);
+        float len = clamp(sp * 0.035, 0.06, 0.5);
+        vec3 wp = aP - ax * (0.5 - position.y) * len + side * position.x * 0.05;
+        vK = aK; vUv = position.xy + 0.5;
+        gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
+      }`,
+    fragmentShader: /* glsl */`
+      varying float vK; varying vec2 vUv;
+      void main(){
+        float edge = 1.0 - abs(vUv.x - 0.5) * 2.0;
+        float head = mix(0.25, 1.0, vUv.y);
+        vec3 c = mix(vec3(1.0, 0.2, 0.03), vec3(1.0, 0.62, 0.22), vK);
+        gl_FragColor = vec4(c * (1.2 + 4.2 * vK) * edge * head * vK, 1.0);
+      }`,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false; mesh.renderOrder = 7; mesh.visible = false;
+  scene.add(mesh);
+  const P = new Float32Array(MAX * 3), V = new Float32Array(MAX * 3), A = new Float32Array(MAX), LF = new Float32Array(MAX);
+  let n = 0;
+  return {
+    spawn(pos, count, dir, speed) {
+      count = Math.max(1, Math.round(count * Q.dust));
+      for (let k = 0; k < count; k++) {
+        const i = n < MAX ? n++ : (Math.random() * n) | 0;
+        let vx = (Math.random() - 0.5) * 2, vy = Math.random() * 1.4 + 0.2, vz = (Math.random() - 0.5) * 2;
+        if (dir) { vx += dir.x * 1.2; vy += Math.max(0, dir.y) * 1.2; vz += dir.z * 1.2; }
+        const l = Math.hypot(vx, vy, vz) || 1, s = speed * (0.35 + Math.random() * 0.9);
+        P[i * 3] = pos.x; P[i * 3 + 1] = pos.y; P[i * 3 + 2] = pos.z;
+        V[i * 3] = vx / l * s; V[i * 3 + 1] = vy / l * s; V[i * 3 + 2] = vz / l * s;
+        A[i] = 0; LF[i] = 0.25 + Math.random() * 0.55;
+      }
+    },
+    update(dt) {
+      if (!n) { mesh.visible = false; return; }
+      const dr = Math.exp(-dt * 1.2);
+      for (let i = 0; i < n; i++) {
+        A[i] += dt;
+        if (A[i] >= LF[i]) {
+          n--;
+          if (i !== n) { for (let k = 0; k < 3; k++) { P[i * 3 + k] = P[n * 3 + k]; V[i * 3 + k] = V[n * 3 + k]; } A[i] = A[n]; LF[i] = LF[n]; }
+          i--; continue;
+        }
+        V[i * 3 + 1] -= 9.8 * dt; V[i * 3] *= dr; V[i * 3 + 1] *= dr; V[i * 3 + 2] *= dr;
+        P[i * 3] += V[i * 3] * dt; P[i * 3 + 1] += V[i * 3 + 1] * dt; P[i * 3 + 2] += V[i * 3 + 2] * dt;
+        if (P[i * 3 + 1] < 0.02) { P[i * 3 + 1] = 0.02; V[i * 3 + 1] = Math.abs(V[i * 3 + 1]) * 0.3; V[i * 3] *= 0.5; V[i * 3 + 2] *= 0.5; }
+        aK.array[i] = 1 - A[i] / LF[i];
+      }
+      aP.array.set(P.subarray(0, n * 3)); aV.array.set(V.subarray(0, n * 3));
+      for (const a of [aP, aV, aK]) { a.clearUpdateRanges(); a.addUpdateRange(0, Math.max(1, n * a.itemSize)); a.needsUpdate = true; }
+      geo.instanceCount = n; mesh.visible = n > 0;
+    },
+    clear() { n = 0; geo.instanceCount = 0; mesh.visible = false; },
+  };
+})();
+fx.sparks = (pos, count, dir, speed) => sparks.spawn(pos, count, dir, speed);
+{
+  const upd = fx.update.bind(fx), clr = fx.clear.bind(fx);
+  fx.update = (dt) => { upd(dt); sparks.update(dt); };
+  fx.clear = () => { clr(); sparks.clear(); };
+}
+
+// ---------- Рабочие в касках: курят, работают, бродят; от шара и обрушений разбегаются ----------
+const workers = (() => {
+  const mk = (geo, count, mat) => {
+    const m = new THREE.InstancedMesh(geo, mat || new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0 }), count);
+    m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false;
+    for (let i = 0; i < count; i++) m.setColorAt(i, new THREE.Color(1, 1, 1));
+    scene.add(m);
+    return m;
+  };
+  const boxG = (w, h, d, oy) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(0, oy, 0); return g; };
+  const helmG = new THREE.SphereGeometry(0.155, 12, 6, 0, TAU, 0, Math.PI / 2); helmG.scale(1, 0.85, 1.12);
+  const ROLES = [
+    { role: 'smoke', home: [-31.2, 21.8], yaw: 1.2, vest: 0xff6a13, helm: 0xff8a1a },
+    { role: 'smoke', home: [-30.1, 22.5], yaw: -2.2, vest: 0xc8f23a, helm: 0xffd21a },
+    { role: 'foreman', home: [-27.2, 23.0], yaw: 2.6, vest: 0x2c5aa0, helm: 0xf2f2f2, legs: 0x1c2640 },
+    { role: 'lean', home: [13.3, 25.5], yaw: 3.0, vest: 0xff6a13, helm: 0xffd21a },
+    { role: 'work', home: [20.2, 3.3], yaw: 1.57, vest: 0xff6a13, helm: 0xff8a1a },
+    { role: 'wave', home: null, yaw: 0, vest: 0xc8f23a, helm: 0xd9281c },
+    { role: 'walk', route: [[-38, 28], [-14, 44], [10, 42], [30, 30], [36, 10]], vest: 0xff6a13, helm: 0xffd21a },
+    { role: 'walk', route: [[36, 8], [34, -18], [10, -32], [-18, -30], [-38, -12], [-40, 6]], vest: 0xc8f23a, helm: 0xff8a1a },
+    { role: 'walk', route: [[4, 52], [22, 48], [30, 36]], vest: 0xff6a13, helm: 0xffffff },
+    { role: 'idle', home: [6, 57], yaw: Math.PI, vest: 0x2c5aa0, helm: 0xffd21a },
+  ];
+  const N = ROLES.length;
+  const M = {
+    leg: mk(boxG(0.17, 0.88, 0.2, -0.44), N * 2),
+    arm: mk(boxG(0.12, 0.64, 0.12, -0.32), N * 2),
+    torso: mk(boxG(0.46, 0.6, 0.27, 0.3), N),
+    stripe: mk(boxG(0.47, 0.05, 0.28, 0), N, new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.1, emissive: new THREE.Color(0.22, 0.22, 0.22) })),
+    head: mk(boxG(0.21, 0.24, 0.22, 0.12), N),
+    helmet: mk(helmG, N),
+  };
+  const SKIN = [0xe2b999, 0xd9a883, 0xc98f6c];
+  const W = ROLES.map((r, i) => ({ ...r, i, x: 0, z: 0, yaw: 0, sp: 0, ph: Math.random() * 6, mode: 'home', t: 0, tx: 0, tz: 0, hx: 0, hz: 0,
+    ri: 0, rd: 1, wait: Math.random() * 3, smokeT: 1 + Math.random() * 5, arm: 0, fx: 0, fz: 0, hop: 0 }));
+  const col = new THREE.Color();
+  const setCol = (m, i, hex) => { col.setHex(hex); m.setColorAt(i, col); };
+  W.forEach((w) => {
+    setCol(M.torso, w.i, w.vest); setCol(M.stripe, w.i, 0xd8dde2);
+    setCol(M.arm, w.i * 2, w.role === 'foreman' ? w.vest : 0x3a404c); setCol(M.arm, w.i * 2 + 1, w.role === 'foreman' ? w.vest : 0x3a404c);
+    setCol(M.leg, w.i * 2, w.legs || 0x262c38); setCol(M.leg, w.i * 2 + 1, w.legs || 0x262c38);
+    setCol(M.head, w.i, SKIN[w.i % 3]); setCol(M.helmet, w.i, w.helm);
+  });
+  for (const m of Object.values(M)) m.instanceColor.needsUpdate = true;
+  const SAY = ['Поберегись!', 'Шар идёт!', 'Разбегаемся!'];
+  let lastSay = -10;
+
+  // не заходить в здание и под кран
+  function keepOut(o, kx, kz) {
+    let x = o[kx], z = o[kz];
+    if (!bldBox.isEmpty()) {
+      const m = 1.6, x0 = bldBox.min.x - m, x1 = bldBox.max.x + m, z0 = bldBox.min.z - m, z1 = bldBox.max.z + m;
+      if (x > x0 && x < x1 && z > z0 && z < z1) {
+        const d = [x - x0, x1 - x, z - z0, z1 - z], k = d.indexOf(Math.min(d[0], d[1], d[2], d[3]));
+        if (k === 0) x = x0; else if (k === 1) x = x1; else if (k === 2) z = z0; else z = z1;
+      }
+    }
+    const cx = x - crane.x, cz = z - crane.z, cd = Math.hypot(cx, cz);
+    if (cd < 5.5 && cd > 1e-3) { x = crane.x + cx / cd * 5.5; z = crane.z + cz / cd * 5.5; }
+    o[kx] = clamp(x, -56, 56); o[kz] = clamp(z, -49, 59);
+  }
+  function moveTo(w, x, z, speed, dt) {
+    const dx = x - w.x, dz = z - w.z, d = Math.hypot(dx, dz);
+    if (d < 0.25) { w.sp = 0; return true; }
+    const st = Math.min(d, speed * dt);
+    w.x += dx / d * st; w.z += dz / d * st;
+    turnTo(w, Math.atan2(dx, dz), dt, 7);
+    w.sp = speed;
+    w.ph += dt * speed * (speed > 3 ? 3.3 : 5.2);
+    keepOut(w, 'x', 'z');
+    return false;
+  }
+  function turnTo(w, yaw, dt, rate) { let d = yaw - w.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); w.yaw += d * (1 - Math.exp(-rate * dt)); }
+  function flee(w, fx, fz, say) {
+    if (w.mode === 'flee' && w.t < 1.5) return;
+    let dx = w.x - fx, dz = w.z - fz; const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l;
+    const a = (Math.random() - 0.5) * 0.8, c = Math.cos(a), s = Math.sin(a);
+    w.tx = w.x + (dx * c - dz * s) * 16; w.tz = w.z + (dx * s + dz * c) * 16;
+    keepOut(w, 'tx', 'tz');
+    w.mode = 'flee'; w.t = 0; w.fx = fx; w.fz = fz;
+    if (say && game.realTime - lastSay > 8 && game.state === 'play') { lastSay = game.realTime; popupAt(pick(SAY), 'say', _v5.set(w.x, 2.4, w.z)); }
+  }
+  function homeOf(w) { if (w.route) { const p = w.route[w.ri]; return [p[0], p[1]]; } return [w.hx, w.hz]; }
+
+  const _mB = new M4(), _mT = new M4(), _mH = new M4(), _mJ = new M4(), _mO = new M4(), _q = new Q4(), _p = new V3(), _s = new V3(1, 1, 1), _eu = new THREE.Euler(), _yAx = new V3(0, 1, 0);
+  function put(mesh, idx, parent, px, py, pz, rx, ry, rz, out) {
+    _eu.set(rx, ry, rz, 'YXZ'); _q.setFromEuler(_eu); _p.set(px, py, pz);
+    _mJ.compose(_p, _q, _s);
+    const o = out || _mO;
+    o.multiplyMatrices(parent, _mJ);
+    mesh.setMatrixAt(idx, o);
+    return o;
+  }
+  function pose(w, t) {
+    let legA = 0, armL = 0, armR = 0, rollL = 0, rollR = 0, lean = 0, bob = 0, headY = 0;
+    if (w.sp > 0.05) {
+      const run = w.sp > 3, amp = run ? 0.95 : 0.55, s = Math.sin(w.ph);
+      legA = s * amp; armL = -s * amp * 0.8; armR = s * amp * 0.8;
+      bob = Math.abs(Math.cos(w.ph)) * (run ? 0.07 : 0.035); lean = run ? 0.22 : 0.04;
+      if (w.mode === 'flee' && run) { armL = -2.6 + Math.sin(w.ph * 1.3) * 0.3; armR = -2.6 - Math.sin(w.ph * 1.3) * 0.3; rollL = -0.25; rollR = 0.25; }
+    } else if (w.mode === 'cheer') {
+      armL = armR = -2.8; rollL = -0.3 - 0.3 * Math.sin(t * 12); rollR = -rollL; bob = Math.abs(Math.sin(t * 8)) * 0.12;
+    } else if (w.mode === 'shock') {
+      armL = armR = -2.3; rollL = 0.55; rollR = -0.55; headY = Math.sin(t * 9) * 0.35;
+    } else if (w.mode === 'home') {
+      if (w.role === 'smoke') { armR = -1.9 * w.arm; rollR = -0.25 * w.arm; headY = Math.sin(t * 0.3 + w.i) * 0.3; }
+      else if (w.role === 'work') { lean = 0.75 + 0.12 * Math.sin(t * 1.6 + w.i); armL = armR = -1.0 + 0.2 * Math.sin(t * 1.6 + w.i); }
+      else if (w.role === 'wave' && crane.work > 0.25) { armR = -2.9; rollR = 0.5 * Math.sin(t * 7); }
+      else if (w.role === 'foreman') { armL = armR = -0.35; rollL = -0.45; rollR = 0.45; headY = Math.sin(t * 0.25) * 0.5; }
+      else if (w.role === 'lean') { rollR = 0.25; headY = Math.sin(t * 0.2 + 1) * 0.4; }
+      else headY = Math.sin(t * 0.4 + w.i) * 0.5;
+    } else headY = Math.sin(t * 0.5 + w.i) * 0.25;
+    bob += w.hop;
+    _p.set(w.x, bob, w.z); _q.setFromAxisAngle(_yAx, w.yaw); _mB.compose(_p, _q, _s);
+    put(M.leg, w.i * 2, _mB, -0.11, 0.9, 0, legA, 0, 0);
+    put(M.leg, w.i * 2 + 1, _mB, 0.11, 0.9, 0, -legA, 0, 0);
+    put(M.torso, w.i, _mB, 0, 0.9, 0, lean, 0, 0, _mT);
+    put(M.stripe, w.i, _mT, 0, 0.36, 0, 0, 0, 0);
+    put(M.arm, w.i * 2, _mT, -0.3, 0.56, 0, armL, 0, rollL);
+    put(M.arm, w.i * 2 + 1, _mT, 0.3, 0.56, 0, armR, 0, rollR);
+    put(M.head, w.i, _mT, 0, 0.6, 0, 0, headY, 0, _mH);
+    put(M.helmet, w.i, _mH, 0, 0.19, 0.01, 0, 0, 0);
+  }
+
+  return {
+    list: W,
+    reset(L) {
+      const fwX = Math.sin(L.crane.heading), fwZ = Math.cos(L.crane.heading);
+      for (const w of W) {
+        if (w.role === 'wave') { w.hx = L.crane.x + fwX * 8 + fwZ * 5; w.hz = L.crane.z + fwZ * 8 - fwX * 5; w.yaw = Math.atan2(L.crane.x - w.hx, L.crane.z - w.hz); }
+        else if (w.home) { w.hx = w.home[0]; w.hz = w.home[1]; w.yaw = w.yaw0 != null ? w.yaw0 : (w.yaw0 = w.yaw); }
+        w.ri = 0; w.rd = 1; w.mode = 'home'; w.t = 0; w.sp = 0; w.hop = 0;
+        const h = homeOf(w); w.x = h[0]; w.z = h[1];
+        keepOut(w, 'x', 'z'); w.hx = w.route ? w.hx : w.x; w.hz = w.route ? w.hz : w.z;
+      }
+    },
+    // что-то опасное рядом: все в радиусе разбегаются
+    alarm(pos, R) {
+      let said = false;
+      for (const w of W) if (Math.hypot(w.x - pos.x, w.z - pos.z) < R) { flee(w, pos.x, pos.z, !said); said = true; }
+    },
+    cheer(pos) { for (const w of W) if (w.mode === 'watch' && Math.random() < 0.6 && Math.hypot(w.x - pos.x, w.z - pos.z) < 70) { w.mode = 'cheer'; w.t = 0; } },
+    propLost(pr) {
+      const f = W.find(w => w.role === 'foreman');
+      if (f && f.mode !== 'flee') { f.mode = 'shock'; f.t = 0; f.sp = 0; turnTo(f, Math.atan2(pr.cx - f.x, pr.cz - f.z), 1, 20); audio.whistle(_v5.set(f.x, 1.7, f.z)); }
+    },
+    update(dt, t) {
+      const rec = ballState.rec, ball = rec ? rec.p1 : null, bsp = rec ? rec.vPre.length() : 0;
+      for (const w of W) {
+        if (dt > 0) {
+          w.t += dt; w.hop = Math.max(0, w.hop - dt * 1.6);
+          if (ball) {
+            const dx = w.x - ball.x, dz = w.z - ball.z, d = Math.hypot(dx, dz);
+            if (d < 2.4 && ball.y < 3.4) {        // шар почти задел — отпрыгнул в сторону
+              const l = d || 1; w.x += dx / l * 2.2; w.z += dz / l * 2.2; w.hop = 0.35; keepOut(w, 'x', 'z'); flee(w, ball.x, ball.z, false);
+            } else if (d < 10 && ball.y < 7 && (bsp > 1.5 || crane.freeFall)) flee(w, ball.x, ball.z, true);
+          }
+          if (w.mode === 'flee') { if (moveTo(w, w.tx, w.tz, 5.2, dt) || w.t > 4.5) { w.mode = 'watch'; w.t = 0; w.sp = 0; } }
+          else if (w.mode === 'watch') { w.sp = 0; turnTo(w, Math.atan2(w.fx - w.x, w.fz - w.z), dt, 4); if (w.t > 7) { w.mode = 'return'; w.t = 0; } }
+          else if (w.mode === 'cheer') { w.sp = 0; if (w.t > 2.6) { w.mode = 'watch'; w.t = 4; } }
+          else if (w.mode === 'shock') { w.sp = 0; if (w.t > 3.2) { w.mode = 'return'; w.t = 0; } }
+          else if (w.mode === 'return') { const h = homeOf(w); if (moveTo(w, h[0], h[1], 1.4, dt)) { w.mode = 'home'; w.t = 0; } }
+          else if (w.route) {                     // обход по маршруту туда-обратно, с остановками
+            if (w.wait > 0) { w.wait -= dt; w.sp = 0; }
+            else if (moveTo(w, w.route[w.ri][0], w.route[w.ri][1], 1.25, dt)) {
+              w.wait = 2 + Math.random() * 4;
+              if (w.ri + w.rd < 0 || w.ri + w.rd >= w.route.length) w.rd = -w.rd;
+              w.ri += w.rd;
+            }
+          } else {
+            if (Math.hypot(w.hx - w.x, w.hz - w.z) > 0.4) moveTo(w, w.hx, w.hz, 1.3, dt);
+            else { w.sp = 0; if (w.role !== 'wave') turnTo(w, w.yaw0 != null ? w.yaw0 : w.yaw, dt, 2); else turnTo(w, Math.atan2(crane.x - w.x, crane.z - w.z), dt, 2); }
+            if (w.role === 'smoke') {             // затяжка раз в несколько секунд, потом дымок
+              w.smokeT -= dt;
+              if (w.smokeT < 0) { w.arm = Math.min(1, w.arm + dt * 3); if (w.smokeT < -1.4) { w.smokeT = 4 + Math.random() * 5; fx.dustSys.spawn(w.x + Math.sin(w.yaw) * 0.25, 1.75, w.z + Math.cos(w.yaw) * 0.25, 0.1, 0.35, 0.05, 0.08, 0.5, 2.2, 0.12, 1, 1, 0.6); } }
+              else w.arm = Math.max(0, w.arm - dt * 3);
+            }
+          }
+        }
+        pose(w, t);
+      }
+      for (const m of Object.values(M)) m.instanceMatrix.needsUpdate = true;
+    },
+  };
+})();
 // =====================================================================
 //  Звук: полностью процедурный (WebAudio), без файлов
 // =====================================================================
@@ -6972,6 +7425,42 @@ const audio = {
     }
     if (big) this.rumbleLevel = Math.min(1.4, this.rumbleLevel + lvl * 0.8);
     this.rattleLevel = Math.min(1.5, this.rattleLevel + lvl * 0.5);
+  },
+  // удар по стальному: звонкие обертоны
+  clang(pos, E) {
+    if (!this.ctx || this.muted || this.voices > 18) return;
+    const o = this.out(pos), lvl = clamp(Math.log10(Math.max(E, 2000) / 2000) / 2.5, 0.05, 1) * o.g * 0.5;
+    if (lvl < 0.02) return;
+    this.voice(1500);
+    const t = this.ctx.currentTime + 0.005, f = 0.85 + Math.random() * 0.3;
+    for (const [fr, d, a] of [[210, 1.1, 0.5], [560, 0.8, 0.35], [1130, 0.5, 0.25], [1970, 0.3, 0.15]]) this.tone(o.node, t, 'sine', fr * f, fr * f * 0.99, lvl * a, 0.002, d);
+    this.noiseBurst(o.node, t, 'highpass', 2500, 0.7, lvl * 0.4, 0.001, 0.08);
+  },
+  // автосигнализация: «уи-уи» несколько секунд
+  alarm(pos, dur = 10) {
+    if (!this.ctx || this.muted) return;
+    const ctx = this.ctx, o = this.out(pos), t = ctx.currentTime + 0.02;
+    const osc = ctx.createOscillator(); osc.type = 'square'; osc.frequency.value = 1050;
+    const lfo = ctx.createOscillator(); lfo.type = 'triangle'; lfo.frequency.value = 2.2;
+    const lg = ctx.createGain(); lg.gain.value = 380; lfo.connect(lg).connect(osc.frequency);
+    const flt = ctx.createBiquadFilter(); flt.type = 'bandpass'; flt.frequency.value = 1400; flt.Q.value = 0.8;
+    const g = ctx.createGain(), peak = 0.12 * o.g;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + 0.05);
+    g.gain.setValueAtTime(peak, t + dur - 0.3); g.gain.linearRampToValueAtTime(0, t + dur);
+    osc.connect(flt).connect(g).connect(o.node);
+    osc.start(t); lfo.start(t); osc.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+  },
+  // свисток прораба
+  whistle(pos) {
+    if (!this.ctx || this.muted) return;
+    const ctx = this.ctx, o = this.out(pos), t = ctx.currentTime + 0.02;
+    for (const [t0, d] of [[0, 0.3], [0.42, 0.65]]) {
+      const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 2900;
+      const vib = ctx.createOscillator(); vib.frequency.value = 38; const vg = ctx.createGain(); vg.gain.value = 90; vib.connect(vg).connect(osc.frequency);
+      const g = ctx.createGain(), pk = 0.05 * o.g;
+      g.gain.setValueAtTime(0, t + t0); g.gain.linearRampToValueAtTime(pk, t + t0 + 0.03); g.gain.setValueAtTime(pk, t + t0 + d - 0.05); g.gain.linearRampToValueAtTime(0, t + t0 + d);
+      osc.connect(g).connect(o.node); osc.start(t + t0); vib.start(t + t0); osc.stop(t + t0 + d + 0.05); vib.stop(t + t0 + d + 0.05);
+    }
   },
   ballClang(pos, E) {
     if (!this.ctx || this.muted) return;
@@ -7136,7 +7625,7 @@ const bldBox = new THREE.Box3();
 let bldBoxT = -1;
 function updateBuildingBox() {
   bldBox.makeEmpty();
-  for (const p of pieces) if (p.state === PS.ATTACHED && !p.foundation) { bldBox.expandByPoint(p.aabbMin); bldBox.expandByPoint(p.aabbMax); }
+  for (const p of pieces) if (p.state === PS.ATTACHED && !p.foundation && !p.prop) { bldBox.expandByPoint(p.aabbMin); bldBox.expandByPoint(p.aabbMax); }
 }
 function pushOutOfBuilding(v, margin) {
   if (bldBox.isEmpty()) return;
@@ -7344,19 +7833,20 @@ function loadLevel(idx) {
   const bp = _fr.tip.clone(); bp.y -= crane.rope + CHAIN + ballState.radius + 0.25;
   createBall(bp);
   L.build();
+  buildSite(L);
   autoBonds(pieces);
   for (const p of pieces) addStaticPiece(p);
   for (const w of windows) attachWindow(w);
   for (const p of pieces) p.foundation = p.anchored && p.aabbMax.y <= 1.1;
   totalMass = pieces.reduce((s, p) => s + p.mass, 0); attachedMass = totalMass;
-  demolishMass = pieces.reduce((s, p) => s + (p.foundation ? 0 : p.mass), 0);
+  demolishMass = pieces.reduce((s, p) => s + (p.foundation || p.prop ? 0 : p.mass), 0);
   standingMass = demolishMass; lastStandCalc = -1;
   const hs = new Set();
   for (const b of bonds) if (b.vertical) hs.add(Math.round(b.c.y * 100) / 100);
   cutHeights = [...hs].filter(h => h > 0.3).sort((a, b) => a - b);
   // лужи не под зданием; пыль и время суток — свои для объекта
   const fb = new THREE.Box3();
-  for (const p of pieces) if (p.anchored) { fb.expandByPoint(p.aabbMin); fb.expandByPoint(p.aabbMax); }
+  for (const p of pieces) if (p.anchored && !p.prop) { fb.expandByPoint(p.aabbMin); fb.expandByPoint(p.aabbMax); }
   groundU.uNoPud.value.set(fb.min.x - 0.6, fb.min.z - 0.6, fb.max.x + 0.6, fb.max.z + 0.6);
   clearDust();
   post.dust.x = L.look.x; post.dust.z = L.look.z; post.dust.amount = 0;
@@ -7382,6 +7872,7 @@ function loadLevel(idx) {
   $('hit-last').textContent = '—';
   setTip(0);
   syncVisuals(1);
+  workers.reset(L);
 }
 
 // ---------- Выкрики и прибаутки ----------
@@ -7390,9 +7881,10 @@ const SHOUT_BIG = ['ОБРУШЕНИЕ!', 'ПОШЛО-ПОЕХАЛО!', 'ГРА�
 const SHOUT_SMALL = ['ОБВАЛ!', 'ПОСЫПАЛОСЬ!', 'КУСОК УШЁЛ!'];
 const SHOUT_CHIMNEY = ['ПОБЕРЕГИСЬ!', 'ТРУБА ПАДАЕТ!', 'ЛОЖИТСЯ, КАК ДЕРЕВО!'];
 const HIT_WORDS = ['ОТ ДУШИ', 'ХОРОШО ПОШЛО', 'ПРОРАБ ОДОБРЯЕТ', 'СОСЕДИ ПРОСНУЛИСЬ', 'ЗВЕНИТ!', 'С ПОДВЫПОДВЕРТОМ'];
+const funny = () => !!(game.level && game.level.shout);
 function bigShout() {
-  const own = game.level && game.level.shout;
-  return own && own.length && Math.random() < 0.65 ? pick(own) : pick(SHOUT_BIG);
+  if (!funny()) return 'ОБРУШЕНИЕ!';
+  return Math.random() < 0.65 ? pick(game.level.shout) : pick(SHOUT_BIG);
 }
 const QUIPS = {
   3: ['Прораб прослезился. Премия — в следующем квартале.', 'Так быстро у нас даже не строят.', 'Чисто, быстро, с пылью в контровом свете. Мастер.'],
@@ -7412,6 +7904,8 @@ const FOREMAN = [
   'P — кадр для отчёта. Прораб любит, когда пыль в контровом свете.',
   'Не стой под стрелой. Особенно если ты дом.',
   'Кран ездит на стрелочках. Медленно, но с достоинством.',
+  'Бытовки и машины сносить не обязательно. Но никто и не запрещал.',
+  'Рабочие разбегаются сами. Шар их не догонит — проверено.',
   'Стеллажи на складе падают домино. Начни с крайнего.',
 ];
 
@@ -7431,19 +7925,45 @@ bus.on('ballhit', (e) => {
     $('hit-last').textContent = String(Math.round(kj));
     if (kj > 45 && game.realTime - game.lastHitPop > 0.45) {
       let t = Math.round(kj) + ' кДж';
-      if (kj > 450 && game.realTime - game.lastWordT > 4) { game.lastWordT = game.realTime; t += ' · ' + pick(HIT_WORDS); }
+      if (funny() && kj > 450 && game.realTime - game.lastWordT > 4) { game.lastWordT = game.realTime; t += ' · ' + pick(HIT_WORDS); }
       popupAt(t, 'hit', e.pos); game.lastHitPop = game.realTime;
     }
   }
+  if (e.ground && e.E > 5e4) craterAt(e.pos, e.E);
+  if (e.E > 2e5) workers.alarm(e.pos, 14);
   addTrauma(clamp(e.E / 900e3, 0, 0.45));
 });
+// Следы на земле: воронка от шара, вмятины от плит, борозда от волочащегося шара
+let lastCrater = { x: 1e9, z: 1e9, t: -10 }, dentBudget = 6, furrowAt = { x: 1e9, z: 1e9 };
+function craterAt(pos, E) {
+  if (game.realTime - lastCrater.t < 0.2 && Math.hypot(pos.x - lastCrater.x, pos.z - lastCrater.z) < 1.5) return;
+  lastCrater = { x: pos.x, z: pos.z, t: game.realTime };
+  stampCrater(pos.x, pos.z, clamp(Math.cbrt(E / 1e5) * 0.95, 0.6, 2.8), clamp(E / 3e5, 0.45, 1), 1);
+}
+function dentAt(pos, E) {
+  if (dentBudget < 1) return;
+  dentBudget--;
+  stampCrater(pos.x, pos.z, clamp(Math.cbrt(E / 1e5) * 0.5, 0.35, 1.1), 0.6, 0.35);
+}
+function ballFurrow(dt) {
+  dentBudget = Math.min(6, dentBudget + dt * 6);
+  const rec = ballState.rec; if (!rec) return;
+  const p = rec.p1, v = rec.vPre;
+  if (p.y > ballState.radius + 0.1 || Math.hypot(v.x, v.z) < 1.0) { furrowAt.x = 1e9; return; }
+  if (Math.hypot(p.x - furrowAt.x, p.z - furrowAt.z) < 0.35) return;
+  furrowAt.x = p.x; furrowAt.z = p.z;
+  stampCrater(p.x, p.z, ballState.radius * 0.55, 0.55, 0);
+}
+const METALLIC = new Set([MAT.METAL, MAT.GATE, MAT.SIGN, MAT.SANDWICH, MAT.CAR, MAT.RACK, MAT.SHELF]);
 bus.on('island', (e) => {
   post.dust.amount = Math.min(0.016, post.dust.amount + e.mass / 150000 * 0.0035);
   if (e.mass > 25000) {
+    workers.alarm(e.com, 26 + clamp(e.mass / 1e4, 0, 20));
+    if (e.mass > 150000) setTimeout(() => workers.cheer(e.com), 3500);
     audio.collapse(e.com, e.mass);
     addTrauma(clamp(e.mass / 600e3, 0.1, 0.5));
     if (game.realTime - game.lastBig > 1.6 && game.state === 'play') {
-      popupAt(e.mass > 150000 ? bigShout() : pick(SHOUT_SMALL), e.mass > 150000 ? 'big' : 'warn', e.mass > 150000 ? null : e.com);
+      popupAt(e.mass > 150000 ? bigShout() : funny() ? pick(SHOUT_SMALL) : 'ОБВАЛ!', e.mass > 150000 ? 'big' : 'warn', e.mass > 150000 ? null : e.com);
       game.lastBig = game.realTime;
     }
     if (e.mass > 120000) triggerSlowmo(e.com);
@@ -7452,7 +7972,8 @@ bus.on('island', (e) => {
 });
 bus.on('tip', (e) => {
   const isChimney = game.level && game.level.id === 'boiler' && e.com.x > 5;
-  if (game.state === 'play') { popupAt(isChimney ? pick(SHOUT_CHIMNEY) : bigShout(), 'big', null); game.lastBig = game.realTime; }
+  if (game.state === 'play') { popupAt(isChimney ? 'ТРУБА ПАДАЕТ!' : funny() ? bigShout() : 'ЗДАНИЕ ПАДАЕТ!', 'big', null); game.lastBig = game.realTime; }
+  workers.alarm(e.com, 42);
   audio.collapse(e.com, e.mass);
   triggerSlowmo(e.com);
   cam.cine.event = e.com.clone(); cam.cine.eventT = simTime;
@@ -7496,7 +8017,13 @@ function handleImpactsFx() {
   for (let i = 0; i < nFx; i++) {
     const im = impacts[i];
     if (im.mat === -1) { if (i < nSnd) audio.thud(im.pos, im.E); fx.dust(im.pos, 2, 0.8, 0.9, 3, 0.3); splashAt(im.pos, im.E * 2); continue; }
-    if (im.mat === -2) { if (i < nSnd) audio.ballClang(im.pos, im.E); continue; }
+    if (im.mat === -2) { if (i < nSnd) audio.ballClang(im.pos, im.E); fx.sparks(im.pos, clamp(im.E / 1.5e4, 5, 30), null, 8); continue; }
+    // искры: металл по металлу, шар по стали; вмятины от упавших плит
+    if (METALLIC.has(im.mat) && im.E > 12e3) {
+      fx.sparks(im.pos, clamp(im.E / 1.5e4, 5, 36), im.dir || null, clamp(Math.sqrt(im.E / 1000) * 0.9, 4, 14));
+      if (i < nSnd && im.E > 5e4) audio.clang(im.pos, im.E);
+    } else if (im.kind === 'ball' && im.E > 2.5e5) fx.sparks(im.pos, clamp(im.E / 6e4, 4, 16), im.dir || null, 7);
+    if (im.kind === 'ground' && im.mat >= 0 && im.E > 1.2e5 && im.pos.y < 1.2) dentAt(im.pos, im.E);
     if (i < nSnd) {
       audio.impact(im.pos, im.E, im.mat, im.E > 250e3);
       if (im.kind === 'ball') audio.ballClang(im.pos, im.E * 0.4);
@@ -7640,7 +8167,7 @@ let demolishMass = 1, standingMass = 1, lastStandCalc = -1;
 function computeStanding() {
   let st = 0;
   for (const p of pieces) {
-    if (p.foundation) continue;
+    if (p.foundation || p.prop) continue;
     if (p.state === PS.ATTACHED) st += p.mass;
     else if (p.state === PS.DYNAMIC && p.body) {
       pieceWorldPose(p, _v4);
@@ -7715,6 +8242,7 @@ function showResults() {
   const st = $('res-stars').children;
   for (let i = 0; i < 3; i++) st[i].classList.toggle('on', i < game.stars);
   $('res-quip').textContent = pick(QUIPS[game.stars] || QUIPS[1]);
+  const ps = siteSummary(); $('res-props').textContent = ps; $('res-props').classList.toggle('hidden', !ps);
   $('res-rec').innerHTML = game.newRec ? '<span class="newrec">НОВЫЙ РЕКОРД</span>' : '';
   $('res-next').textContent = game.levelIdx < LEVELS.length - 1 ? 'Дальше ▶' : 'К объектам';
   $('results').classList.remove('hidden');
@@ -7734,10 +8262,9 @@ const ICONS = {
   pyat: ISVG(IR(3, 20, 34, 16, '#e8e8e4') + IR(3, 16, 34, 4.4, '#ffffff') + IR(5, 24.5, 21, 9, '#2f4a5c') + IR(28.5, 25.5, 6.5, 10.5, '#2f4a5c') +
     '<rect x="5" y="3" width="13" height="13" rx="2.5" fill="#e1251b"/><text x="11.5" y="14" font-family="Arial,sans-serif" font-weight="900" font-size="12" fill="#fff" text-anchor="middle">5</text><ellipse cx="17.5" cy="4" rx="3.4" ry="1.8" fill="#43b02a" transform="rotate(-30 17.5 4)"/>' +
     IR(21, 17.2, 14, 2, '#e1251b')),
-  kiosk: ISVG(IR(2, 20, 11, 16, '#ece9e1') + IR(14.5, 20, 11, 16, '#c8dcef') + IR(27, 20, 11, 16, '#ece9e1') + IR(2, 16, 11, 4, '#d9261c') + IR(14.5, 16, 11, 4, '#2a8a44') + IR(27, 16, 11, 4, '#1f5fb4') +
-    IR(3.5, 23, 8, 6, '#2f4a5c') + IR(16, 23, 8, 6, '#2f4a5c') + IR(28.5, 23, 8, 6, '#2f4a5c')),
-  garage: ISVG(IR(1, 14, 38, 2, '#4a4d52') + IR(2, 16, 36, 20, '#a8553c') + IR(3.5, 20, 7, 16, '#4f7a4a') + IR(12.5, 20, 7, 16, '#6b4a36') + IR(21.5, 20, 7, 16, '#3f5f86') + IR(30.5, 20, 7, 16, '#7a7d80') +
-    '<path d="M5 26 q1.5 -2 3 0 t3 0" stroke="#fff" stroke-width="1.1" fill="none"/>'),
+  vkusno: ISVG(IR(2, 16, 36, 20, '#43464b') + IR(12.5, 20.5, 23, 10, '#2f4a5c') + IR(2, 5, 9.5, 31, '#43464b') + IR(2.8, 6, 8, 8, '#10593b') +
+    '<rect x="4.2" y="7.6" width="1.4" height="4.8" rx="0.7" fill="#ffc72c" transform="rotate(-9 4.9 10)"/><rect x="6.4" y="7.1" width="1.4" height="5.4" rx="0.7" fill="#ffc72c"/><circle cx="8.9" cy="11.6" r="1.25" fill="#ee4a1d"/>' +
+    IR(13, 17.2, 22, 2.4, '#10593b')),
   mall: ISVG(IR(2, 12, 36, 24, '#cfd3d6') + IR(9, 7, 22, 4.5, '#1f5fb4') + IWIN(4, 15, 4, 1, 8.3, 0, 6.5, 4, '#39404a') + IR(3, 21.5, 8, 3, '#8d2bd6') + IR(12, 21.5, 7, 3, '#005bff') + IR(20, 21.5, 8, 3, '#d9261c') + IR(29, 21.5, 8, 3, '#1f9d55') + IR(3, 26, 34, 9, '#2f4a5c')),
   ozon: ISVG(IR(2, 15, 36, 21, '#eef0f2') + IR(2, 9, 36, 6.5, '#005bff') + '<text x="20" y="14.4" font-family="Arial,sans-serif" font-weight="900" font-size="5.6" fill="#fff" text-anchor="middle">OZON</text>' +
     IR(4.5, 24, 7, 12, '#c5ccd6') + IR(14, 24, 7, 12, '#c5ccd6') + IR(26.5, 26, 9, 10, '#2f4a5c') + IR(27, 22.5, 8, 2.6, '#005bff')),
@@ -7859,7 +8386,7 @@ function makeSeg(id, items, cur, onPick) {
 makeSeg('seg-q', [['auto', 'Авто'], ['ultra', 'Ультра'], ['high', 'Высокая'], ['mid', 'Средняя'], ['low', 'Низкая']], qualityName, (v) => {
   qualityName = v; store.set('quality', v); qualityStep = 0; applyQuality(v === 'auto' ? autoQualityStart() : v);
 });
-makeSeg('seg-tod', [['auto', 'По объекту'], ['morning', 'Утро'], ['day', 'День'], ['golden', 'Золотой час'], ['sunset', 'Закат']], todSetting, (v) => {
+makeSeg('seg-tod', [['auto', 'По объекту'], ['golden', 'Золотой час'], ['sunset', 'Закат']], todSetting, (v) => {
   todSetting = v; store.set('tod', v); if (game.level) applyTOD(todFor(game.level), game.level);
   fillLevelInfo();
 });
@@ -7949,7 +8476,7 @@ window.addEventListener('keydown', (e) => {
     case 'KeyI': game.perf = !game.perf; $('perf').classList.toggle('on', game.perf); break;
     case 'Digit1': case 'Digit2': {
       const i = +e.code.slice(5) - 1;
-      if (setBallType(i)) toast('ШАР ' + BALL_TYPES[i].name.toUpperCase() + ' · ' + BALL_TYPES[i].quip);
+      if (setBallType(i)) toast('ШАР ' + BALL_TYPES[i].name.toUpperCase() + (funny() ? ' · ' + BALL_TYPES[i].quip : ''));
       break;
     }
     case 'Escape': openMenu(); break;
@@ -8045,7 +8572,7 @@ function frame(now) {
         // страховка: если движок физики упал — пересобираем объект, а не зависаем
         console.error('Сбой физики:', err);
         acc = 0;
-        if (game.realTime - (game.lastCrash || -100) > 5) { game.lastCrash = game.realTime; loadLevel(game.levelIdx); game.state = 'play'; popupAt('Физика споткнулась — объект пересобран', 'warn', null); }
+        if (game.realTime - (game.lastCrash || -100) > 5) { game.lastCrash = game.realTime; loadLevel(game.levelIdx); game.state = 'play'; popupAt('Сбой физики — объект пересобран', 'warn', null); }
         break;
       }
       acc -= STEP; steps++;
@@ -8076,10 +8603,12 @@ function frame(now) {
     game.blockSndT = game.realTime;
     audio.ballClang(crane.tipPos, 60000);
     audio.thud(crane.pivotPos, 40000);
-    if (game.realTime - game.blockPopT > 6) { game.blockPopT = game.realTime; popupAt('Стрела упёрлась. Дом тоже упёрся', 'warn', null); }
+    if (game.realTime - game.blockPopT > 6) { game.blockPopT = game.realTime; popupAt(funny() ? 'Стрела упёрлась. Склад тоже упёрся' : 'Стрела упёрлась в здание', 'warn', null); }
   }
   game.wasBlocked = crane.blocked;
   fx.update(dtReal * (running ? timeScale : 1));
+  if (running) { updateSite(dtReal); ballFurrow(dtReal * timeScale); }
+  workers.update(game.state === 'menu' && game.inProgress ? 0 : dtReal * (running ? timeScale : 1), game.realTime);
   birds.update(dtReal * (running ? timeScale : 1), game.realTime);
   rebar.update();
   updateCamera(dtReal, game.level);
@@ -8134,7 +8663,7 @@ setTimeout(() => { $('loading').classList.add('fade'); setTimeout(() => $('loadi
 requestAnimationFrame((t) => { last = t; frame(t); });
 
 // отладка из консоли
-window.__game = { signScale, ground, groundMat, getQ: () => Q, setQ: (k, v) => { Q[k] = v; if (k === 'msaa') post.resize(); }, post, applyTOD, TOD, drawFrame: () => post.render(), atmU, groundU, renderer, scene, camera, hookBlock, rig, ballGroup, craneModel, game, crane, ballState, get pieces() { return pieces; }, get bonds() { return bonds; }, bodyRecs, get world() { return world; }, fx, cam, input, keys, LEVELS, loadLevel, runLoadStep, tippingCheck, prof, audio, api: { shatterPiece, pulverizePiece, impactPiece, PS, MAT, get maxStress() { return maxStressRatio; }, get simTime() { return simTime; } }, stats: () => ({ fps: fpsAvg, frameMs: frameMsAvg, physMs, bodies: bodyRecs.size, attached: pieces.filter(p => p.state === PS.ATTACHED).length, pct: game.pct }) };
+window.__game = { signScale, site, workers, siteSummary, stampCrater, bus, sparks, ground, groundMat, getQ: () => Q, setQ: (k, v) => { Q[k] = v; if (k === 'msaa') post.resize(); }, post, applyTOD, TOD, drawFrame: () => post.render(), atmU, groundU, renderer, scene, camera, hookBlock, rig, ballGroup, craneModel, game, crane, ballState, get pieces() { return pieces; }, get bonds() { return bonds; }, bodyRecs, get world() { return world; }, fx, cam, input, keys, LEVELS, loadLevel, runLoadStep, tippingCheck, prof, audio, api: { shatterPiece, pulverizePiece, impactPiece, PS, MAT, get maxStress() { return maxStressRatio; }, get simTime() { return simTime; } }, stats: () => ({ fps: fpsAvg, frameMs: frameMsAvg, physMs, bodies: bodyRecs.size, attached: pieces.filter(p => p.state === PS.ATTACHED).length, pct: game.pct }) };
 </script>
 </body>
 </html>
